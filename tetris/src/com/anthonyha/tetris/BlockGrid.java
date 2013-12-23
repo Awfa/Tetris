@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 //Contains a collection of blocks in an x and y plane
 public class BlockGrid {
+	
 	public ArrayList<ArrayList<Boolean>> blockGrid;
 	
 	private int width, height;
@@ -63,4 +64,5 @@ public class BlockGrid {
 		
 		return false;
 	}
+	
 }

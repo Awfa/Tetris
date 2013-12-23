@@ -1,6 +1,7 @@
 package com.anthonyha.tetris;
 
 public class Tetromino {
+	
 	public BlockGrid blockGrid;
 	
 	public Tetromino(BlockGrid contents) {
