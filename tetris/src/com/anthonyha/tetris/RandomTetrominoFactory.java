@@ -13,10 +13,6 @@ public class RandomTetrominoFactory implements TetrominoFactory {
 		I, O, T, S, Z, J, L
 	}
 	
-	public RandomTetrominoFactory() {
-		generateGrabBag();
-	}
-	
 	@Override
 	public Tetromino getPiece() {
 		TetrominoNames tetrominoName;
