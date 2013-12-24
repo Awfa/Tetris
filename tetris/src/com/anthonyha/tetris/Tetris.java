@@ -48,22 +48,22 @@ public class Tetris implements ApplicationListener {
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 		
 		//Render GameBoard
-		shapeRenderer.setColor(0, 1, 0, 1);
+		
 		
 		for (int x = 0; x < gameBoard.gameGrid.getWidth(); ++x) {
 			for (int y = 0; y < gameBoard.gameGrid.getHeight(); ++y) {
 				if (gameBoard.gameGrid.getValue(x, y)) {
+					shapeRenderer.setColor(gameBoard.gameGrid.getBlock(x, y).color);
 					shapeRenderer.rect(x, y, 1, 1);
 				}
 			}
 		}
 		
 		//Render Active Tetromino
-		shapeRenderer.setColor(1, 0, 0, 1);
-		
 		for (int x = 0; x < gameBoard.activeTetromino.blockGrid.getWidth(); ++x) {
 			for (int y = 0; y < gameBoard.activeTetromino.blockGrid.getHeight(); ++y) {
 				if (gameBoard.activeTetromino.blockGrid.getValue(x, y)) {
+					shapeRenderer.setColor(gameBoard.activeTetromino.blockGrid.getBlock(x, y).color);
 					shapeRenderer.rect(x+gameBoard.tetrominoX, y+gameBoard.tetrominoY, 1, 1);
 				}
 			}

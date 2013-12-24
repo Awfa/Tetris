@@ -13,7 +13,7 @@ public class Tetromino {
 		
 		for (int x = 0; x < blockGrid.getWidth(); ++x) {
 			for (int y = 0; y < blockGrid.getHeight(); ++y) {
-				rotatedGrid.setValue(y, x, blockGrid.getValue(blockGrid.getWidth()-x-1, y));
+				rotatedGrid.setBlock(y, x, blockGrid.getBlock(blockGrid.getWidth()-x-1, y));
 			}
 		}
 		blockGrid = rotatedGrid;
@@ -24,7 +24,7 @@ public class Tetromino {
 		
 		for (int x = 0; x < blockGrid.getWidth(); ++x) {
 			for (int y = 0; y < blockGrid.getHeight(); ++y) {
-				rotatedGrid.setValue(y, x, blockGrid.getValue(x, blockGrid.getHeight()-y-1));
+				rotatedGrid.setBlock(y, x, blockGrid.getBlock(x, blockGrid.getHeight()-y-1));
 			}
 		}
 		blockGrid = rotatedGrid;

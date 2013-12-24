@@ -2,23 +2,25 @@ package com.anthonyha.tetris;
 
 import java.util.ArrayList;
 
+import com.badlogic.gdx.graphics.Color;
+
 //Contains a collection of blocks in an x and y plane
 public class BlockGrid {
 	
-	public ArrayList<ArrayList<Boolean>> blockGrid;
+	public ArrayList<ArrayList<Block>> blockGrid;
 	
 	private int width, height;
 	
 	//Initialize empty BlockGrid
 	public BlockGrid(int width, int height) {
-		blockGrid = new ArrayList<ArrayList<Boolean>>(width);
+		blockGrid = new ArrayList<ArrayList<Block>>(width);
 		this.width = width;
 		this.height = height;
 		
 		for(int x = 0; x < width; ++x) {
-			blockGrid.add(new ArrayList<Boolean>(height));
+			blockGrid.add(new ArrayList<Block>(height));
 			for (int y = 0; y < height; ++y) {
-				blockGrid.get(x).add(new Boolean(false));
+				blockGrid.get(x).add(new Block());
 			}
 		}
 	}
@@ -39,13 +41,34 @@ public class BlockGrid {
 			return false;
 		}
 		
+		return blockGrid.get(x).get(y).state;
+	}
+	
+	//Retrieve block at coordinates (x,y)
+	public Block getBlock(int x, int y) {
+		//Check for boundaries
+		if (x < 0 || y < 0 || x >= width || y >= height) {
+			return Block.EMPTY_BLOCK;
+		}
+		
 		return blockGrid.get(x).get(y);
 	}
 	
-	//Set block value at coordinates (x,y)
-	public boolean setValue(int x, int y, boolean value) {
+	//Set block value at coordinates (x,y) and also the color
+	public boolean setValue(int x, int y, boolean value, Color color) {
 		if (x >= 0 && y >= 0 && x < width && y < height) {
-			blockGrid.get(x).set(y, value);
+			blockGrid.get(x).get(y).state = value;
+			blockGrid.get(x).get(y).color = color;
+			return true;
+		}
+		
+		return false;
+	}
+	
+	//Set block at coordinates (x,y)
+	public boolean setBlock(int x, int y, Block block) {
+		if (x >= 0 && y >= 0 && x < width && y < height) {
+			blockGrid.get(x).set(y, block);
 			return true;
 		}
 		

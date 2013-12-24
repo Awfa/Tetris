@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.ArrayList;
 
+import com.badlogic.gdx.graphics.Color;
+
 public class RandomTetrominoFactory implements TetrominoFactory {
 	
 	private Random generator = new Random();
@@ -30,56 +32,56 @@ public class RandomTetrominoFactory implements TetrominoFactory {
 		switch (tetrominoName) {
 			case I:
 				grid = new BlockGrid(4, 4);
-				grid.setValue(0, 2, true);
-				grid.setValue(1, 2, true);
-				grid.setValue(2, 2, true);
-				grid.setValue(3, 2, true);
+				grid.setValue(0, 2, true, Color.CYAN);
+				grid.setValue(1, 2, true, Color.CYAN);
+				grid.setValue(2, 2, true, Color.CYAN);
+				grid.setValue(3, 2, true, Color.CYAN);
 				break;
 			case O:
 				grid = new BlockGrid(2, 2);
-				grid.setValue(0, 0, true);
-				grid.setValue(0, 1, true);
-				grid.setValue(1, 0, true);
-				grid.setValue(1, 1, true);
+				grid.setValue(0, 0, true, Color.YELLOW);
+				grid.setValue(0, 1, true, Color.YELLOW);
+				grid.setValue(1, 0, true, Color.YELLOW);
+				grid.setValue(1, 1, true, Color.YELLOW);
 				break;
 			case T:
 				grid = new BlockGrid(3, 3);
-				grid.setValue(0, 1, true);
-				grid.setValue(1, 1, true);
-				grid.setValue(1, 2, true);
-				grid.setValue(2, 1, true);
+				grid.setValue(0, 1, true, Color.MAGENTA);
+				grid.setValue(1, 1, true, Color.MAGENTA);
+				grid.setValue(1, 2, true, Color.MAGENTA);
+				grid.setValue(2, 1, true, Color.MAGENTA);
 				break;
 			case S:
 				grid = new BlockGrid(3, 3);
-				grid.setValue(0, 1, true);
-				grid.setValue(1, 1, true);
-				grid.setValue(1, 2, true);
-				grid.setValue(2, 2, true);
+				grid.setValue(0, 1, true, Color.GREEN);
+				grid.setValue(1, 1, true, Color.GREEN);
+				grid.setValue(1, 2, true, Color.GREEN);
+				grid.setValue(2, 2, true, Color.GREEN);
 				break;
 			case Z:
 				grid = new BlockGrid(3, 3);
-				grid.setValue(0, 2, true);
-				grid.setValue(1, 1, true);
-				grid.setValue(1, 2, true);
-				grid.setValue(2, 1, true);
+				grid.setValue(0, 2, true, Color.RED);
+				grid.setValue(1, 1, true, Color.RED);
+				grid.setValue(1, 2, true, Color.RED);
+				grid.setValue(2, 1, true, Color.RED);
 				break;
 			case J:
 				grid = new BlockGrid(3, 3);
-				grid.setValue(0, 1, true);
-				grid.setValue(0, 2, true);
-				grid.setValue(1, 1, true);
-				grid.setValue(2, 1, true);
+				grid.setValue(0, 1, true, Color.BLUE);
+				grid.setValue(0, 2, true, Color.BLUE);
+				grid.setValue(1, 1, true, Color.BLUE);
+				grid.setValue(2, 1, true, Color.BLUE);
 				break;
 			case L:
 				grid = new BlockGrid(3, 3);
-				grid.setValue(0, 1, true);
-				grid.setValue(1, 1, true);
-				grid.setValue(2, 1, true);
-				grid.setValue(2, 2, true);
+				grid.setValue(0, 1, true, Color.ORANGE);
+				grid.setValue(1, 1, true, Color.ORANGE);
+				grid.setValue(2, 1, true, Color.ORANGE);
+				grid.setValue(2, 2, true, Color.ORANGE);
 				break;
 			default: //Debug block
 				grid = new BlockGrid(1, 1);
-				grid.setValue(0, 0, true);
+				grid.setValue(0, 0, true, Color.BLACK);
 				break;
 		}
 		return new Tetromino(grid);
