@@ -9,20 +9,25 @@ public class TetrisBoard {
 	private static final int BOARD_HEIGHT = 24;
 	private static final int QUEUE_LENGTH = 3;
 	private static final float LOCK_TIME = 0.1f;
-	private static final float FALL_TIME = 0f;
+	private static final float FALL_TIME = 1f;
+	private static final float DELAYED_AUTO_SHIFT_TIME = 0.133f;
 	
 	private TetrominoFactory factory;
 	private float fallTimer = 0;
 	private float lockTimer = 0;
+	private float moveTimer = 0;
 	
 	public BlockGrid gameGrid;
 	public Tetromino activeTetromino;
 	public ArrayDeque<Tetromino> tetrominoQueue;
 	
 	public int tetrominoX, tetrominoY;
+	public boolean left, right;
 	
 	public TetrisBoard(long seed) {
 		Color borderColor = Color.BLACK;
+		left = false;
+		right = false;
 		
 		factory = new RandomTetrominoFactory();
 		factory.setSeed(seed);
@@ -50,9 +55,26 @@ public class TetrisBoard {
 	}
 	
 	public void update(float deltaTime) {
+		//Process DAS movement
+		if (moveTimer >= DELAYED_AUTO_SHIFT_TIME) {
+			if (left) {
+				moveLeft();
+			} else if (right) {
+				moveRight();
+			} else {
+				moveTimer = 0f;
+			}
+		} else if (left ^ right) { // If left xor right, add dt to the move timer
+			moveTimer += deltaTime;
+		} else {
+			moveTimer = 0f;
+		}
+		
 		//Lock and spawn new piece
 		if (gameGrid.intersects(activeTetromino.blockGrid, tetrominoX, tetrominoY-1)) {
 			lockTimer += deltaTime;
+		} else {
+			lockTimer = 0;
 		}
 		
 		if (lockTimer >= LOCK_TIME) {
@@ -70,6 +92,18 @@ public class TetrisBoard {
 			}
 			
 			fallTimer -= FALL_TIME;
+		}
+	}
+	
+	public void moveRight() {
+		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoX+1, tetrominoY)) {
+			++tetrominoX;
+		}
+	}
+	
+	public void moveLeft() {
+		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoX-1, tetrominoY)) {
+			--tetrominoX;
 		}
 	}
 	
