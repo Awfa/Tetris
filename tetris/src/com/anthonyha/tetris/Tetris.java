@@ -2,13 +2,20 @@ package com.anthonyha.tetris;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-public class Tetris implements ApplicationListener {
+public class Tetris implements ApplicationListener, InputProcessor {
 	private OrthographicCamera camera;
 	private ShapeRenderer shapeRenderer;
+	private SpriteBatch spriteBatch;
+	private BitmapFont bitmapFont;
 	
 	private TetrisBoard gameBoard;
 	
@@ -27,8 +34,12 @@ public class Tetris implements ApplicationListener {
 		shapeRenderer.translate(w/2-scale*(gameBoard.gameGrid.getWidth()/2), h/2-scale*(gameBoard.gameGrid.getHeight()/2), 0);
 		shapeRenderer.scale(scale, scale, 1);
 		
+		spriteBatch = new SpriteBatch();
 		
-
+		bitmapFont = new BitmapFont();
+		bitmapFont.setColor(Color.BLACK);
+		
+		Gdx.input.setInputProcessor(this);
 	}
 
 	@Override
@@ -43,13 +54,18 @@ public class Tetris implements ApplicationListener {
 		
 		gameBoard.update(Gdx.graphics.getDeltaTime());
 		
-		shapeRenderer.setProjectionMatrix(camera.combined);
+		spriteBatch.setProjectionMatrix(camera.combined);
+		spriteBatch.begin();
 		
+		//Render score
+		bitmapFont.draw(spriteBatch, "Score: " + gameBoard.getLinesCleared(), 350, Gdx.graphics.getHeight()-10);
+		
+		spriteBatch.end();
+		
+		shapeRenderer.setProjectionMatrix(camera.combined);
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 		
 		//Render GameBoard
-		
-		
 		for (int x = 0; x < gameBoard.gameGrid.getWidth(); ++x) {
 			for (int y = 0; y < gameBoard.gameGrid.getHeight(); ++y) {
 				if (gameBoard.gameGrid.getValue(x, y)) {
@@ -82,5 +98,74 @@ public class Tetris implements ApplicationListener {
 
 	@Override
 	public void resume() {
+	}
+	
+	//Input Processing
+	@Override
+	public boolean keyDown(int keycode) {
+		if (keycode == Keys.A) {
+			gameBoard.left = true;
+			gameBoard.moveLeft();
+			return true;
+		} else if (keycode == Keys.D) {
+			gameBoard.right = true;
+			gameBoard.moveRight();
+			return true;
+		} else if (keycode == Keys.S) {
+			gameBoard.down = true;
+		}
+		
+		
+		return false;
+	}
+
+	@Override
+	public boolean keyUp(int keycode) {
+		if (keycode == Keys.A) {
+			gameBoard.left = false;
+			return true;
+		} else if (keycode == Keys.D){
+			gameBoard.right = false;
+			return true;
+		} else if (keycode == Keys.S) {
+			gameBoard.down = false;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean keyTyped(char character) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean touchDragged(int screenX, int screenY, int pointer) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean mouseMoved(int screenX, int screenY) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean scrolled(int amount) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }
