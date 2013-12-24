@@ -103,17 +103,15 @@ public class TetrisBoard {
 	public void moveRight() {
 		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoX+1, tetrominoY)) {
 			++tetrominoX;
+			lockTimer = 0f;
 		}
-		
-		lockTimer = 0f;
 	}
 	
 	public void moveLeft() {
 		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoX-1, tetrominoY)) {
 			--tetrominoX;
-		}
-		
-		lockTimer = 0f;
+			lockTimer = 0f;
+		}		
 	}
 	
 	public int getLinesCleared() {
