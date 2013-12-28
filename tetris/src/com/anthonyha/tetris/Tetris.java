@@ -16,29 +16,31 @@ public class Tetris implements ApplicationListener, InputProcessor {
 	private ShapeRenderer shapeRenderer;
 	private SpriteBatch spriteBatch;
 	private BitmapFont bitmapFont;
-	
+
 	private TetrisBoard gameBoard;
-	
+
 	@Override
-	public void create() {		
+	public void create() {
 		float w = Gdx.graphics.getWidth();
 		float h = Gdx.graphics.getHeight();
-		
+
 		int scale = 30;
 		gameBoard = new TetrisBoard(scale);
-		
+
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, w, h);
-		
+
 		shapeRenderer = new ShapeRenderer();
-		shapeRenderer.translate(w/2-scale*(gameBoard.gameGrid.getWidth()/2), h/2-scale*(gameBoard.gameGrid.getHeight()/2), 0);
+		shapeRenderer.translate(w / 2 - scale
+				* (gameBoard.gameGrid.getWidth() / 2), h / 2 - scale
+				* (gameBoard.gameGrid.getHeight() / 2), 0);
 		shapeRenderer.scale(scale, scale, 1);
-		
+
 		spriteBatch = new SpriteBatch();
-		
+
 		bitmapFont = new BitmapFont();
 		bitmapFont.setColor(Color.BLACK);
-		
+
 		Gdx.input.setInputProcessor(this);
 	}
 
@@ -48,43 +50,47 @@ public class Tetris implements ApplicationListener, InputProcessor {
 	}
 
 	@Override
-	public void render() {		
+	public void render() {
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-		
+
 		gameBoard.update(Gdx.graphics.getDeltaTime());
-		
+
 		spriteBatch.setProjectionMatrix(camera.combined);
 		spriteBatch.begin();
-		
-		//Render score
-		bitmapFont.draw(spriteBatch, "Score: " + gameBoard.getLinesCleared(), 350, Gdx.graphics.getHeight()-10);
-		
+
+		// Render score
+		bitmapFont.draw(spriteBatch, "Score: " + gameBoard.getLinesCleared(),
+				350, Gdx.graphics.getHeight() - 10);
+
 		spriteBatch.end();
-		
+
 		shapeRenderer.setProjectionMatrix(camera.combined);
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		
-		//Render GameBoard
+
+		// Render GameBoard
 		for (int x = 0; x < gameBoard.gameGrid.getWidth(); ++x) {
 			for (int y = 0; y < gameBoard.gameGrid.getHeight(); ++y) {
 				if (gameBoard.gameGrid.getValue(x, y)) {
-					shapeRenderer.setColor(gameBoard.gameGrid.getBlock(x, y).color);
+					shapeRenderer
+							.setColor(gameBoard.gameGrid.getBlock(x, y).color);
 					shapeRenderer.rect(x, y, 1, 1);
 				}
 			}
 		}
-		
-		//Render Active Tetromino
+
+		// Render Active Tetromino
 		for (int x = 0; x < gameBoard.activeTetromino.blockGrid.getWidth(); ++x) {
 			for (int y = 0; y < gameBoard.activeTetromino.blockGrid.getHeight(); ++y) {
 				if (gameBoard.activeTetromino.blockGrid.getValue(x, y)) {
-					shapeRenderer.setColor(gameBoard.activeTetromino.blockGrid.getBlock(x, y).color);
-					shapeRenderer.rect(x+gameBoard.tetrominoX, y+gameBoard.tetrominoY, 1, 1);
+					shapeRenderer.setColor(gameBoard.activeTetromino.blockGrid
+							.getBlock(x, y).color);
+					shapeRenderer.rect(x + gameBoard.tetrominoX, y
+							+ gameBoard.tetrominoY, 1, 1);
 				}
 			}
 		}
-		
+
 		shapeRenderer.end();
 	}
 
@@ -99,8 +105,8 @@ public class Tetris implements ApplicationListener, InputProcessor {
 	@Override
 	public void resume() {
 	}
-	
-	//Input Processing
+
+	// Input Processing
 	@Override
 	public boolean keyDown(int keycode) {
 		if (keycode == Keys.A) {
@@ -113,9 +119,12 @@ public class Tetris implements ApplicationListener, InputProcessor {
 			return true;
 		} else if (keycode == Keys.S) {
 			gameBoard.down = true;
+		} else if (keycode == Keys.Q) {
+			gameBoard.rotateCounterClockwise();
+		} else if (keycode == Keys.E) {
+			gameBoard.rotateClockwise();
 		}
-		
-		
+
 		return false;
 	}
 
@@ -124,7 +133,7 @@ public class Tetris implements ApplicationListener, InputProcessor {
 		if (keycode == Keys.A) {
 			gameBoard.left = false;
 			return true;
-		} else if (keycode == Keys.D){
+		} else if (keycode == Keys.D) {
 			gameBoard.right = false;
 			return true;
 		} else if (keycode == Keys.S) {
