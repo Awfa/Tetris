@@ -123,6 +123,8 @@ public class Tetris implements ApplicationListener, InputProcessor {
 			gameBoard.rotateCounterClockwise();
 		} else if (keycode == Keys.E) {
 			gameBoard.rotateClockwise();
+		} else if (keycode == Keys.W){
+			gameBoard.hardDrop();
 		}
 
 		return false;

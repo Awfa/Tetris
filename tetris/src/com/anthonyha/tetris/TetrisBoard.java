@@ -101,6 +101,12 @@ public class TetrisBoard {
 			fallTimer -= FALL_TIME / (down ? SOFT_DROP_MULTIPLIER : 1);
 		}
 	}
+	
+	public void hardDrop() {
+		while(!gameGrid.intersects(activeTetromino.blockGrid, tetrominoX, tetrominoY-1)) {
+			--tetrominoY;
+		}
+	}
 
 	public void moveRight() {
 		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoX + 1, tetrominoY)) {
