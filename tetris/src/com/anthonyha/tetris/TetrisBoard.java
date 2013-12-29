@@ -2,12 +2,13 @@ package com.anthonyha.tetris;
 
 import java.util.ArrayDeque;
 
+import com.anthonyha.tetris.Tetromino.TetrominoNames;
 import com.badlogic.gdx.graphics.Color;
 
 public class TetrisBoard {
 	private static final int BOARD_WIDTH = 12;
 	private static final int BOARD_HEIGHT = 24;
-	private static final int QUEUE_LENGTH = 3;
+	private static final int QUEUE_LENGTH = 4;
 	private static final float LOCK_TIME = 0.5f;
 	private static final float FALL_TIME = 1f;
 	private static final float SOFT_DROP_MULTIPLIER = 5f;
@@ -15,18 +16,19 @@ public class TetrisBoard {
 	private static final float AUTO_MOVEMENT_DELAY = 0.05f;
 
 	private TetrominoFactory factory;
-	private float fallTimer = 0;
-	private float lockTimer = 0;
-	private float moveTimer = 0;
+	private float fallTimer = 0f;
+	private float lockTimer = 0f;
+	private float moveTimer = 0f;
 
 	private int linesCleared = 0;
 
 	public BlockGrid gameGrid;
 	public Tetromino activeTetromino;
+	public Tetromino heldTetromino;
 	public ArrayDeque<Tetromino> tetrominoQueue;
 
 	public int tetrominoX, tetrominoY;
-	public boolean left, right, down;
+	public boolean left, right, down, held;
 
 	public TetrisBoard(long seed) {
 		Color borderColor = Color.BLACK;
@@ -121,6 +123,22 @@ public class TetrisBoard {
 			lockTimer = 0f;
 		}
 	}
+	
+	public void holdPiece() {
+		if (!held) {
+			TetrominoNames activeName = activeTetromino.getName();
+			
+			if (heldTetromino == null) {
+				spawnTetromino();
+			} else {
+				tetrominoQueue.addFirst(heldTetromino);
+				spawnTetromino();
+			}
+			
+			heldTetromino = factory.getPiece(activeName);
+			held = true;
+		}
+	}
 
 	public void rotateClockwise() {
 		Tetromino temp = new Tetromino(activeTetromino);
@@ -200,6 +218,8 @@ public class TetrisBoard {
 				--y; // Decrement y so that it will check again
 			}
 		}
+		
+		held = false;
 
 	}
 
