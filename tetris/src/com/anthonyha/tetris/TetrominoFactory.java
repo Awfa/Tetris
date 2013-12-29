@@ -1,11 +1,8 @@
 package com.anthonyha.tetris;
 
+import com.anthonyha.tetris.Tetromino.TetrominoNames;
+
 public interface TetrominoFactory {
-	
-	public enum TetrominoNames {
-		I, O, T, S, Z, J, L
-	}
-	
 	public Tetromino getPiece();
 	public Tetromino getPiece(TetrominoNames tetrominoName);
 	public void setSeed(long seed);
