@@ -108,11 +108,11 @@ public class RandomTetrominoFactory implements TetrominoFactory {
 		case S:
 		case T:
 		case Z:
-			return new Tetromino(grid, jlstzOffsets);
+			return new Tetromino(grid, jlstzOffsets, tetrominoName);
 		case I:
-			return new Tetromino(grid, iOffsets);
+			return new Tetromino(grid, iOffsets, tetrominoName);
 		case O:
-			return new Tetromino(grid, oOffsets);
+			return new Tetromino(grid, oOffsets, tetrominoName);
 		}
 		return null;
 		

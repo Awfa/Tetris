@@ -3,18 +3,25 @@ package com.anthonyha.tetris;
 public class Tetromino {
 
 	private RotationState rotationState;
-
+	private TetrominoNames name;
+	
+	public enum TetrominoNames {
+		I, O, T, S, Z, J, L
+	}
+	
 	public enum RotationState {
 		UP, RIGHT, DOWN, LEFT
 	}
 
 	public BlockGrid blockGrid;
 	public Vector2[][] offsetData;
+	
 
-	public Tetromino(BlockGrid contents, Vector2[][] offsetData) {
+	public Tetromino(BlockGrid contents, Vector2[][] offsetData, TetrominoNames name) {
 		blockGrid = contents;
 		this.offsetData = offsetData;
 		rotationState = RotationState.UP;
+		this.name = name;
 	}
 
 	public Tetromino(Tetromino t) {
@@ -53,6 +60,10 @@ public class Tetromino {
 
 	public RotationState getRotationState() {
 		return rotationState;
+	}
+	
+	public TetrominoNames getName() {
+		return name;
 	}
 
 }
