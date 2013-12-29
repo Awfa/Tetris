@@ -34,25 +34,20 @@ public class RandomTetrominoFactory implements TetrominoFactory {
 	private Random generator = new Random();
 	private ArrayList<TetrominoNames> bag = new ArrayList<TetrominoNames>(7);
 	
-	public enum TetrominoNames {
-		I, O, T, S, Z, J, L
-	}
-	
 	@Override
 	public Tetromino getPiece() {
-		TetrominoNames tetrominoName;
-		BlockGrid grid = null;
-		
-		//Refill the bag if it's empty
 		if (bag.isEmpty()) {
 			generateGrabBag();
 		}
 		
-		//Grab a name and remove it from the bag
-		tetrominoName = bag.get(0);
-		bag.remove(0);
-		
+		return getPiece(bag.remove(0));
+	}
+	
+	@Override
+	public Tetromino getPiece(TetrominoNames tetrominoName) {
 		//Generate piece from name
+		BlockGrid grid = null;
+		
 		switch (tetrominoName) {
 		case I:
 			grid = new BlockGrid(5, 5);
@@ -121,7 +116,7 @@ public class RandomTetrominoFactory implements TetrominoFactory {
 		return null;
 		
 	}
-
+	
 	@Override
 	public void setSeed(long seed) {
 		generator.setSeed(seed);
@@ -138,5 +133,4 @@ public class RandomTetrominoFactory implements TetrominoFactory {
 		
 		Collections.shuffle(bag, generator);
 	}
-	
 }
