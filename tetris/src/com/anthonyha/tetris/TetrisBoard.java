@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.Color;
 public class TetrisBoard {
 	private static final int BOARD_WIDTH = 12;
 	private static final int BOARD_HEIGHT = 24;
-	private static final int QUEUE_LENGTH = 4;
+	private static final int QUEUE_LENGTH = 3;
 	private static final float LOCK_TIME = 0.5f;
 	private static final float FALL_TIME = 1f;
 	private static final float SOFT_DROP_MULTIPLIER = 5f;
@@ -131,8 +131,7 @@ public class TetrisBoard {
 			if (heldTetromino == null) {
 				spawnTetromino();
 			} else {
-				tetrominoQueue.addFirst(heldTetromino);
-				spawnTetromino();
+				spawnTetromino(heldTetromino);
 			}
 			
 			heldTetromino = factory.getPiece(activeName);
@@ -226,6 +225,15 @@ public class TetrisBoard {
 	private void spawnTetromino() {
 		activeTetromino = tetrominoQueue.remove();
 		tetrominoQueue.add(factory.getPiece());
+
+		tetrominoX = BOARD_WIDTH / 2 - (activeTetromino.blockGrid.getWidth() + 1) / 2;
+		tetrominoY = BOARD_HEIGHT - 1 - activeTetromino.blockGrid.getHeight();
+
+		moveTimer = 0f;
+	}
+	
+	private void spawnTetromino(Tetromino t) {
+		activeTetromino = t;
 
 		tetrominoX = BOARD_WIDTH / 2 - (activeTetromino.blockGrid.getWidth() + 1) / 2;
 		tetrominoY = BOARD_HEIGHT - 1 - activeTetromino.blockGrid.getHeight();
