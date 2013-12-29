@@ -1,5 +1,7 @@
 package com.anthonyha.tetris;
 
+import java.util.Iterator;
+
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
@@ -31,9 +33,7 @@ public class Tetris implements ApplicationListener, InputProcessor {
 		camera.setToOrtho(false, w, h);
 
 		shapeRenderer = new ShapeRenderer();
-		shapeRenderer.translate(w / 2 - scale
-				* (gameBoard.gameGrid.getWidth() / 2), h / 2 - scale
-				* (gameBoard.gameGrid.getHeight() / 2), 0);
+		shapeRenderer.translate(w / 2 - scale * (gameBoard.gameGrid.getWidth() / 2), h / 2 - scale * (gameBoard.gameGrid.getHeight() / 2), 0);
 		shapeRenderer.scale(scale, scale, 1);
 
 		spriteBatch = new SpriteBatch();
@@ -83,14 +83,38 @@ public class Tetris implements ApplicationListener, InputProcessor {
 		for (int x = 0; x < gameBoard.activeTetromino.blockGrid.getWidth(); ++x) {
 			for (int y = 0; y < gameBoard.activeTetromino.blockGrid.getHeight(); ++y) {
 				if (gameBoard.activeTetromino.blockGrid.getValue(x, y)) {
-					shapeRenderer.setColor(gameBoard.activeTetromino.blockGrid
-							.getBlock(x, y).color);
-					shapeRenderer.rect(x + gameBoard.tetrominoX, y
-							+ gameBoard.tetrominoY, 1, 1);
+					shapeRenderer.setColor(gameBoard.activeTetromino.blockGrid.getBlock(x, y).color);
+					shapeRenderer.rect(x + gameBoard.tetrominoX, y + gameBoard.tetrominoY, 1, 1);
 				}
 			}
 		}
-
+		
+		// Render Held Piece
+		if (gameBoard.heldTetromino != null) {
+			for (int x = 0; x < gameBoard.heldTetromino.blockGrid.getWidth(); ++x) {
+				for (int y = 0; y < gameBoard.heldTetromino.blockGrid.getHeight(); ++y) {
+					if (gameBoard.heldTetromino.blockGrid.getValue(x, y)) {
+						shapeRenderer.setColor(gameBoard.heldTetromino.blockGrid.getBlock(x, y).color);
+						shapeRenderer.rect(x-6, y+19, 1, 1);
+					}
+				}
+			}
+		}
+		
+		// Render Queue
+		int i = 0;
+		for (Iterator<Tetromino> iter = gameBoard.tetrominoQueue.iterator(); iter.hasNext(); ++i) {
+			Tetromino t = iter.next();
+			for (int x = 0; x < t.blockGrid.getWidth(); ++x) {
+				for (int y = 0; y < t.blockGrid.getHeight(); ++y) {
+					if (t.blockGrid.getValue(x, y)) {
+						shapeRenderer.setColor(t.blockGrid.getBlock(x, y).color);
+						shapeRenderer.rect(x+13, y+19 - (i*4), 1, 1);
+					}
+				}
+			}
+		}
+		
 		shapeRenderer.end();
 	}
 
@@ -123,8 +147,10 @@ public class Tetris implements ApplicationListener, InputProcessor {
 			gameBoard.rotateCounterClockwise();
 		} else if (keycode == Keys.E) {
 			gameBoard.rotateClockwise();
-		} else if (keycode == Keys.W){
+		} else if (keycode == Keys.W) {
 			gameBoard.hardDrop();
+		} else if (keycode == Keys.SHIFT_LEFT) {
+			gameBoard.holdPiece();
 		}
 
 		return false;
