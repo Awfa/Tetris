@@ -21,7 +21,9 @@ public class TetrisBoard {
 	private float moveTimer = 0f;
 
 	private int linesCleared = 0;
-
+	private BlockGrid playingField;
+	private boolean loss = false;
+	
 	public BlockGrid gameGrid;
 	public Tetromino activeTetromino;
 	public Tetromino heldTetromino;
@@ -51,7 +53,15 @@ public class TetrisBoard {
 			gameGrid.setValue(0, y, true, Color.BLACK);
 			gameGrid.setValue(BOARD_WIDTH - 1, y, true, borderColor);
 		}
-
+		
+		// Playing field is just for intersection test to see if piece locks above visible playing area
+		playingField = new BlockGrid(BOARD_WIDTH-2, BOARD_HEIGHT-4); // Top 2 rows are hidden, borders taken into account
+		for (int x = 0; x < BOARD_WIDTH-2; ++x) {
+			for (int y = 0; y < BOARD_HEIGHT-4; ++y) {
+				playingField.setValue(x, y, true, Color.BLACK);
+			}
+		}
+		
 		tetrominoQueue = new ArrayDeque<Tetromino>(QUEUE_LENGTH);
 
 		for (int i = 0; i < QUEUE_LENGTH; ++i) {
@@ -62,70 +72,75 @@ public class TetrisBoard {
 	}
 
 	public void update(float deltaTime) {
-		// Process DAS movement
-		if (moveTimer >= DELAYED_AUTO_SHIFT_TIME) {
-			if (left) {
-				moveLeft();
-			} else if (right) {
-				moveRight();
+		if (!loss) {
+			// Process DAS movement
+			if (moveTimer >= DELAYED_AUTO_SHIFT_TIME) {
+				if (left) {
+					moveLeft();
+				} else if (right) {
+					moveRight();
+				}
+				moveTimer -= AUTO_MOVEMENT_DELAY;
+			} else if (left ^ right) { // If left xor right, add dt to the move
+										// timer
+				moveTimer += deltaTime;
+			} else {
+				moveTimer = 0f;
 			}
-			moveTimer -= AUTO_MOVEMENT_DELAY;
-		} else if (left ^ right) { // If left xor right, add dt to the move
-									// timer
-			moveTimer += deltaTime;
-		} else {
-			moveTimer = 0f;
-		}
-
-		// Check for intersection downwards and adds to the lock timer if there
-		// is one
-		if (gameGrid.intersects(activeTetromino.blockGrid, tetrominoX, tetrominoY - 1)) {
-			lockTimer += deltaTime;
-		} else {
-			lockTimer = 0f;
-		}
-
-		// If lock time has been exceeded, lock and spawn a new tetromino
-		if (lockTimer >= LOCK_TIME) {
-			lockTetromino();
-			spawnTetromino();
-			lockTimer -= LOCK_TIME;
-		} else {
-			fallTimer += deltaTime;
-		}
-
-		// Make the piece fall
-		if (fallTimer >= FALL_TIME / (down ? SOFT_DROP_MULTIPLIER : 1)) {
-			if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoX, tetrominoY - 1)) {
-				--tetrominoY;
+	
+			// Check for intersection downwards and adds to the lock timer if there
+			// is one
+			if (gameGrid.intersects(activeTetromino.blockGrid, tetrominoX, tetrominoY - 1)) {
+				lockTimer += deltaTime;
+			} else {
+				lockTimer = 0f;
 			}
-
-			fallTimer -= FALL_TIME / (down ? SOFT_DROP_MULTIPLIER : 1);
+	
+			// If lock time has been exceeded, lock and spawn a new tetromino
+			if (lockTimer >= LOCK_TIME) {
+				if (lockTetromino()) {
+					spawnTetromino();
+					lockTimer -= LOCK_TIME;
+				}
+			} else {
+				fallTimer += deltaTime;
+			}
+	
+			// Make the piece fall
+			if (fallTimer >= FALL_TIME / (down ? SOFT_DROP_MULTIPLIER : 1)) {
+				if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoX, tetrominoY - 1)) {
+					--tetrominoY;
+				}
+	
+				fallTimer -= FALL_TIME / (down ? SOFT_DROP_MULTIPLIER : 1);
+			}
 		}
 	}
 	
 	public void hardDrop() {
-		while(!gameGrid.intersects(activeTetromino.blockGrid, tetrominoX, tetrominoY-1)) {
-			--tetrominoY;
+		if (!loss) {
+			while(!gameGrid.intersects(activeTetromino.blockGrid, tetrominoX, tetrominoY-1)) {
+				--tetrominoY;
+			}
 		}
 	}
 
 	public void moveRight() {
-		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoX + 1, tetrominoY)) {
+		if (!loss && !gameGrid.intersects(activeTetromino.blockGrid, tetrominoX + 1, tetrominoY)) {
 			++tetrominoX;
 			lockTimer = 0f;
 		}
 	}
 
 	public void moveLeft() {
-		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoX - 1, tetrominoY)) {
+		if (!loss && !gameGrid.intersects(activeTetromino.blockGrid, tetrominoX - 1, tetrominoY)) {
 			--tetrominoX;
 			lockTimer = 0f;
 		}
 	}
 	
 	public void holdPiece() {
-		if (!held) {
+		if (!loss && !held) {
 			TetrominoNames activeName = activeTetromino.getName();
 			
 			if (heldTetromino == null) {
@@ -140,45 +155,49 @@ public class TetrisBoard {
 	}
 
 	public void rotateClockwise() {
-		Tetromino temp = new Tetromino(activeTetromino);
-		temp.rotateClockwise();
-
-		for (int offset = 0; offset < activeTetromino.offsetData[0].length; ++offset) {
-			// Derive kick translations from offsets
-			Vector2 offsetPreRot = new Vector2(activeTetromino.offsetData[activeTetromino.getRotationState().ordinal()][offset]);
-			Vector2 offsetPostRot = activeTetromino.offsetData[temp.getRotationState().ordinal()][offset];
-			Vector2 kickTranslation = offsetPreRot.sub(offsetPostRot);
-
-			// If there isn't an intersection, then apply offset and be done
-			if (!gameGrid.intersects(temp.blockGrid, tetrominoX + kickTranslation.x, tetrominoY + kickTranslation.y)) {
-				tetrominoX += kickTranslation.x;
-				tetrominoY += kickTranslation.y;
-
-				activeTetromino.rotateClockwise();
-				lockTimer = 0f;
-				break;
+		if (!loss) {
+			Tetromino temp = new Tetromino(activeTetromino);
+			temp.rotateClockwise();
+	
+			for (int offset = 0; offset < activeTetromino.offsetData[0].length; ++offset) {
+				// Derive kick translations from offsets
+				Vector2 offsetPreRot = new Vector2(activeTetromino.offsetData[activeTetromino.getRotationState().ordinal()][offset]);
+				Vector2 offsetPostRot = activeTetromino.offsetData[temp.getRotationState().ordinal()][offset];
+				Vector2 kickTranslation = offsetPreRot.sub(offsetPostRot);
+	
+				// If there isn't an intersection, then apply offset and be done
+				if (!gameGrid.intersects(temp.blockGrid, tetrominoX + kickTranslation.x, tetrominoY + kickTranslation.y)) {
+					tetrominoX += kickTranslation.x;
+					tetrominoY += kickTranslation.y;
+	
+					activeTetromino.rotateClockwise();
+					lockTimer = 0f;
+					break;
+				}
 			}
 		}
 	}
 
 	public void rotateCounterClockwise() {
-		Tetromino temp = new Tetromino(activeTetromino);
-		temp.rotateCounterClockwise();
-
-		for (int offset = 0; offset < activeTetromino.offsetData[0].length; ++offset) {
-			// Derive kick translations from offsets
-			Vector2 offsetPreRot = new Vector2(activeTetromino.offsetData[activeTetromino.getRotationState().ordinal()][offset]);
-			Vector2 offsetPostRot = activeTetromino.offsetData[temp.getRotationState().ordinal()][offset];
-			Vector2 kickTranslation = offsetPreRot.sub(offsetPostRot);
-
-			// If there isn't an intersection, then apply offset and be done
-			if (!gameGrid.intersects(temp.blockGrid, tetrominoX + kickTranslation.x, tetrominoY + kickTranslation.y)) {
-				tetrominoX += kickTranslation.x;
-				tetrominoY += kickTranslation.y;
-
-				activeTetromino.rotateCounterClockwise();
-				lockTimer = 0f;
-				break;
+		if (!loss) {
+			Tetromino temp = new Tetromino(activeTetromino);
+			temp.rotateCounterClockwise();
+	
+			for (int offset = 0; offset < activeTetromino.offsetData[0].length; ++offset) {
+				// Derive kick translations from offsets
+				Vector2 offsetPreRot = new Vector2(activeTetromino.offsetData[activeTetromino.getRotationState().ordinal()][offset]);
+				Vector2 offsetPostRot = activeTetromino.offsetData[temp.getRotationState().ordinal()][offset];
+				Vector2 kickTranslation = offsetPreRot.sub(offsetPostRot);
+	
+				// If there isn't an intersection, then apply offset and be done
+				if (!gameGrid.intersects(temp.blockGrid, tetrominoX + kickTranslation.x, tetrominoY + kickTranslation.y)) {
+					tetrominoX += kickTranslation.x;
+					tetrominoY += kickTranslation.y;
+	
+					activeTetromino.rotateCounterClockwise();
+					lockTimer = 0f;
+					break;
+				}
 			}
 		}
 	}
@@ -186,40 +205,48 @@ public class TetrisBoard {
 	public int getLinesCleared() {
 		return linesCleared;
 	}
-
-	private void lockTetromino() {
-		// Set all game grid blocks to be the same as the active tetromino's
-		for (int x = 0; x < activeTetromino.blockGrid.getWidth(); ++x) {
-			for (int y = 0; y < activeTetromino.blockGrid.getHeight(); ++y) {
-				if (activeTetromino.blockGrid.getValue(x, y)) {
-					gameGrid.setBlock(x + tetrominoX, y + tetrominoY, activeTetromino.blockGrid.getBlock(x, y));
+	
+	public boolean isLoss() {
+		return loss;
+	}
+	
+	private boolean lockTetromino() {
+		// Check for loss conditions
+		if (gameGrid.intersects(activeTetromino.blockGrid, tetrominoX, tetrominoY) || !playingField.intersects(activeTetromino.blockGrid, tetrominoX-1, tetrominoY-1) ) {
+			loss = true;
+			return false;
+		} else {
+			// Check if the piece is above the visible portion of the playing field
+			// Set all game grid blocks to be the same as the active tetromino's
+			for (int x = 0; x < activeTetromino.blockGrid.getWidth(); ++x) {
+				for (int y = 0; y < activeTetromino.blockGrid.getHeight(); ++y) {
+					if (activeTetromino.blockGrid.getValue(x, y)) {
+						gameGrid.setBlock(x + tetrominoX, y + tetrominoY, activeTetromino.blockGrid.getBlock(x, y));
+					}
 				}
 			}
-		}
-
-		// Process for line clears
-		for (int y = 1; y < BOARD_HEIGHT - 1; ++y) { // From the bottom of the
-														// board, to the top.
-														// Careful for borders!
-			int blocksInALine = 0; // Keep track of blocks in a line to see if a
-									// line is full
-			for (int x = 1; x < BOARD_WIDTH - 1; ++x) {
-				if (gameGrid.getValue(x, y)) {
-					++blocksInALine;
-				} else {
-					break; // No need to check if there is a single hole
+	
+			// Process for line clears
+			for (int y = 1; y < BOARD_HEIGHT - 1; ++y) { // From the bottom of the board, to the top.
+				int blocksInALine = 0; // Keep track of blocks in a line to see if a line is full
+				for (int x = 1; x < BOARD_WIDTH - 1; ++x) {
+					if (gameGrid.getValue(x, y)) {
+						++blocksInALine;
+					} else {
+						break; // No need to check if there is a single hole
+					}
+				}
+	
+				if (blocksInALine == BOARD_WIDTH - 2) {
+					clearLine(y);
+					++linesCleared;
+					--y; // Decrement y so that it will check again
 				}
 			}
-
-			if (blocksInALine == BOARD_WIDTH - 2) {
-				clearLine(y);
-				++linesCleared;
-				--y; // Decrement y so that it will check again
-			}
+			
+			held = false;
+			return true;
 		}
-		
-		held = false;
-
 	}
 
 	private void spawnTetromino() {
@@ -248,4 +275,5 @@ public class TetrisBoard {
 			}
 		}
 	}
+	
 }
