@@ -8,22 +8,29 @@ import com.badlogic.gdx.graphics.Color;
 public class TetrisBoard {
 	private static final int BOARD_WIDTH = 12;
 	private static final int BOARD_HEIGHT = 24;
+	private static final int BOARD_TOP_MARGIN = 2;
 	private static final int QUEUE_LENGTH = 3;
 	private static final float LOCK_TIME = 0.5f;
 	private static final float FALL_TIME = 1f;
 	private static final float SOFT_DROP_MULTIPLIER = 5f;
 	private static final float DELAYED_AUTO_SHIFT_TIME = 0.3f;
 	private static final float AUTO_MOVEMENT_DELAY = 0.05f;
-
+	
+	//Score multipliers for no lines cleared, single, double, triple, and quad respectively.
+	private static final int[] scoreMultipliers = {0, 100, 300, 500, 800};
+	
 	private TetrominoFactory factory;
 	private float fallTimer = 0f;
 	private float lockTimer = 0f;
 	private float moveTimer = 0f;
 
-	private int linesCleared = 0;
-	private BlockGrid playingField;
 	private boolean loss = false;
+	private boolean lineCleared;
 	
+	private int score = 0;
+	private int level = 1;
+	
+	private BlockGrid playingField;
 	public BlockGrid gameGrid;
 	public Tetromino activeTetromino;
 	public Tetromino heldTetromino;
@@ -55,9 +62,9 @@ public class TetrisBoard {
 		}
 		
 		// Playing field is just for intersection test to see if piece locks above visible playing area
-		playingField = new BlockGrid(BOARD_WIDTH-2, BOARD_HEIGHT-4); // Top 2 rows are hidden, borders taken into account
+		playingField = new BlockGrid(BOARD_WIDTH-2, BOARD_HEIGHT-BOARD_TOP_MARGIN-2);
 		for (int x = 0; x < BOARD_WIDTH-2; ++x) {
-			for (int y = 0; y < BOARD_HEIGHT-4; ++y) {
+			for (int y = 0; y < BOARD_HEIGHT-BOARD_TOP_MARGIN-2; ++y) {
 				playingField.setValue(x, y, true, Color.BLACK);
 			}
 		}
@@ -81,15 +88,13 @@ public class TetrisBoard {
 					moveRight();
 				}
 				moveTimer -= AUTO_MOVEMENT_DELAY;
-			} else if (left ^ right) { // If left xor right, add dt to the move
-										// timer
+			} else if (left ^ right) {
 				moveTimer += deltaTime;
 			} else {
 				moveTimer = 0f;
 			}
 	
-			// Check for intersection downwards and adds to the lock timer if there
-			// is one
+			// Check for intersection downwards and adds to the lock timer if there is one
 			if (gameGrid.intersects(activeTetromino.blockGrid, tetrominoX, tetrominoY - 1)) {
 				lockTimer += deltaTime;
 			} else {
@@ -105,7 +110,8 @@ public class TetrisBoard {
 			} else {
 				fallTimer += deltaTime;
 			}
-	
+			
+			// TODO Fix up soft drop, and add scoring for soft drop
 			// Make the piece fall
 			if (fallTimer >= FALL_TIME / (down ? SOFT_DROP_MULTIPLIER : 1)) {
 				if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoX, tetrominoY - 1)) {
@@ -121,6 +127,7 @@ public class TetrisBoard {
 		if (!loss) {
 			while(!gameGrid.intersects(activeTetromino.blockGrid, tetrominoX, tetrominoY-1)) {
 				--tetrominoY;
+				score += 2;
 			}
 		}
 	}
@@ -202,8 +209,8 @@ public class TetrisBoard {
 		}
 	}
 
-	public int getLinesCleared() {
-		return linesCleared;
+	public int getScore() {
+		return score;
 	}
 	
 	public boolean isLoss() {
@@ -227,6 +234,7 @@ public class TetrisBoard {
 			}
 	
 			// Process for line clears
+			int lines = 0;
 			for (int y = 1; y < BOARD_HEIGHT - 1; ++y) { // From the bottom of the board, to the top.
 				int blocksInALine = 0; // Keep track of blocks in a line to see if a line is full
 				for (int x = 1; x < BOARD_WIDTH - 1; ++x) {
@@ -239,9 +247,23 @@ public class TetrisBoard {
 	
 				if (blocksInALine == BOARD_WIDTH - 2) {
 					clearLine(y);
-					++linesCleared;
+					++lines;
 					--y; // Decrement y so that it will check again
 				}
+			}
+			
+			// Process score normally, or back-to-back circumstances
+			if (lineCleared) {
+				score += scoreMultipliers[lines] * level * 1.5f;
+			} else {
+				score += scoreMultipliers[lines] * level;
+			}
+			
+			// Set lineCleared flag correspondingly
+			if (lines > 0) {
+				lineCleared = true;
+			} else {
+				lineCleared = false;
 			}
 			
 			held = false;

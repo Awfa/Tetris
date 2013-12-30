@@ -60,7 +60,7 @@ public class Tetris implements ApplicationListener, InputProcessor {
 		spriteBatch.begin();
 
 		// Render score
-		bitmapFont.draw(spriteBatch, "Score: " + gameBoard.getLinesCleared(),
+		bitmapFont.draw(spriteBatch, "Score: " + gameBoard.getScore(),
 				350, Gdx.graphics.getHeight() - 10);
 
 		spriteBatch.end();
