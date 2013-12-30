@@ -30,7 +30,7 @@ public class TetrisBoard {
 	private int score = 0;
 	private int level = 1;
 	
-	private BlockGrid playingField;
+	private BlockGrid spawnField;
 	public BlockGrid gameGrid;
 	public Tetromino activeTetromino;
 	public Tetromino heldTetromino;
@@ -61,11 +61,10 @@ public class TetrisBoard {
 			gameGrid.setValue(BOARD_WIDTH - 1, y, true, borderColor);
 		}
 		
-		// Playing field is just for intersection test to see if piece locks above visible playing area
-		playingField = new BlockGrid(BOARD_WIDTH-2, BOARD_HEIGHT-BOARD_TOP_MARGIN-2);
+		spawnField = new BlockGrid(BOARD_WIDTH-2, BOARD_TOP_MARGIN);
 		for (int x = 0; x < BOARD_WIDTH-2; ++x) {
-			for (int y = 0; y < BOARD_HEIGHT-BOARD_TOP_MARGIN-2; ++y) {
-				playingField.setValue(x, y, true, Color.BLACK);
+			for (int y = 0; y < BOARD_TOP_MARGIN; ++y) {
+				spawnField.setValue(x, y, true, Color.BLACK);
 			}
 		}
 		
@@ -219,7 +218,8 @@ public class TetrisBoard {
 	
 	private boolean lockTetromino() {
 		// Check for loss conditions
-		if (gameGrid.intersects(activeTetromino.blockGrid, tetrominoX, tetrominoY) || !playingField.intersects(activeTetromino.blockGrid, tetrominoX-1, tetrominoY-1) ) {
+		if (gameGrid.intersects(activeTetromino.blockGrid, tetrominoX, tetrominoY) ||
+				spawnField.intersects(activeTetromino.blockGrid, tetrominoX-1, tetrominoY + BOARD_HEIGHT - 2 - BOARD_TOP_MARGIN) ) {
 			loss = true;
 			return false;
 		} else {
