@@ -2,6 +2,7 @@ package com.anthonyha.tetris;
 
 import java.util.Collections;
 import java.util.Random;
+import java.util.List;
 import java.util.ArrayList;
 
 import com.anthonyha.tetris.Tetromino.TetrominoNames;
@@ -33,7 +34,7 @@ public class RandomTetrominoFactory implements TetrominoFactory {
 		};
 	
 	private Random generator = new Random();
-	private ArrayList<TetrominoNames> bag = new ArrayList<TetrominoNames>(7);
+	private List<TetrominoNames> bag = new ArrayList<TetrominoNames>(7);
 	
 	@Override
 	public Tetromino getPiece() {

@@ -1,5 +1,7 @@
 package com.anthonyha.tetris;
 
+import java.util.*;
+
 public class Tetromino {
 
 	private RotationState rotationState;
@@ -9,13 +11,24 @@ public class Tetromino {
 		I, O, T, S, Z, J, L
 	}
 	
+	public static final Map<TetrominoNames, Vector2> spawnOffsets;
+	static {
+		spawnOffsets = new HashMap<TetrominoNames, Vector2>();
+		spawnOffsets.put(TetrominoNames.I, new Vector2(0, 0));
+		spawnOffsets.put(TetrominoNames.O, new Vector2(0, -1));
+		spawnOffsets.put(TetrominoNames.T, new Vector2(0, -1));
+		spawnOffsets.put(TetrominoNames.S, new Vector2(0, -1));
+		spawnOffsets.put(TetrominoNames.Z, new Vector2(0, -1));
+		spawnOffsets.put(TetrominoNames.J, new Vector2(0, -1));
+		spawnOffsets.put(TetrominoNames.L, new Vector2(0, -1));
+	}
+	
 	public enum RotationState {
 		UP, RIGHT, DOWN, LEFT
 	}
 
 	public BlockGrid blockGrid;
 	public Vector2[][] offsetData;
-	
 
 	public Tetromino(BlockGrid contents, Vector2[][] offsetData, TetrominoNames name) {
 		blockGrid = contents;

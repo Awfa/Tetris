@@ -88,7 +88,7 @@ public class Tetris implements ApplicationListener, InputProcessor {
 			for (int y = 0; y < gameBoard.activeTetromino.blockGrid.getHeight(); ++y) {
 				if (gameBoard.activeTetromino.blockGrid.getValue(x, y)) {
 					shapeRenderer.setColor(gameBoard.activeTetromino.blockGrid.getBlock(x, y).color);
-					shapeRenderer.rect(x + gameBoard.tetrominoX, y + gameBoard.tetrominoY, 1, 1);
+					shapeRenderer.rect(x + gameBoard.tetrominoPos.x, y + gameBoard.tetrominoPos.y, 1, 1);
 				}
 			}
 		}
