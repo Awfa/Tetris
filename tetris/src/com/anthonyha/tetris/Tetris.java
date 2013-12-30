@@ -67,13 +67,17 @@ public class Tetris implements ApplicationListener, InputProcessor {
 
 		shapeRenderer.setProjectionMatrix(camera.combined);
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
+		
+		// Render background
+		shapeRenderer.setColor(Color.GRAY);
+		shapeRenderer.rect(1, 1, gameBoard.gameGrid.getWidth()-2, gameBoard.gameGrid.getHeight()-4);
+		
+		
 		// Render GameBoard
-		for (int x = 0; x < gameBoard.gameGrid.getWidth(); ++x) {
-			for (int y = 0; y < gameBoard.gameGrid.getHeight(); ++y) {
+		for (int x = 1; x < gameBoard.gameGrid.getWidth()-1; ++x) {
+			for (int y = 1; y < gameBoard.gameGrid.getHeight()-4; ++y) {
 				if (gameBoard.gameGrid.getValue(x, y)) {
-					shapeRenderer
-							.setColor(gameBoard.gameGrid.getBlock(x, y).color);
+					shapeRenderer.setColor(gameBoard.gameGrid.getBlock(x, y).color);
 					shapeRenderer.rect(x, y, 1, 1);
 				}
 			}
@@ -102,14 +106,14 @@ public class Tetris implements ApplicationListener, InputProcessor {
 		}
 		
 		// Render Queue
-		int i = 0;
-		for (Iterator<Tetromino> iter = gameBoard.tetrominoQueue.iterator(); iter.hasNext(); ++i) {
+		int queueDisplacement = 0;
+		for (Iterator<Tetromino> iter = gameBoard.tetrominoQueue.iterator(); iter.hasNext(); ++queueDisplacement) {
 			Tetromino t = iter.next();
 			for (int x = 0; x < t.blockGrid.getWidth(); ++x) {
 				for (int y = 0; y < t.blockGrid.getHeight(); ++y) {
 					if (t.blockGrid.getValue(x, y)) {
 						shapeRenderer.setColor(t.blockGrid.getBlock(x, y).color);
-						shapeRenderer.rect(x+13, y+19 - (i*4), 1, 1);
+						shapeRenderer.rect(x+13, y+19 - (queueDisplacement*4), 1, 1);
 					}
 				}
 			}
