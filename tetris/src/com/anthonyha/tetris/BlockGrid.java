@@ -2,7 +2,7 @@ package com.anthonyha.tetris;
 
 import java.util.ArrayList;
 
-import com.badlogic.gdx.graphics.Color;
+import com.anthonyha.tetris.Tetromino.TetrominoNames;
 
 //Contains a collection of blocks in an x and y plane
 public class BlockGrid {
@@ -21,6 +21,20 @@ public class BlockGrid {
 			blockGrid.add(new ArrayList<Block>(height));
 			for (int y = 0; y < height; ++y) {
 				blockGrid.get(x).add(new Block());
+			}
+		}
+	}
+	
+	public BlockGrid(int width, int height, TetrominoNames name) {
+		blockGrid = new ArrayList<ArrayList<Block>>(width);
+		this.width = width;
+		this.height = height;
+
+		for (int x = 0; x < width; ++x) {
+			blockGrid.add(new ArrayList<Block>(height));
+			for (int y = 0; y < height; ++y) {
+				blockGrid.get(x).add(new Block());
+				blockGrid.get(x).get(y).name = name;
 			}
 		}
 	}
@@ -53,17 +67,29 @@ public class BlockGrid {
 
 		return blockGrid.get(x).get(y);
 	}
-
-	// Set block value at coordinates (x,y) and also the color
-	public boolean setValue(int x, int y, boolean value, Color color) {
+	
+	// Set block value at coordinates (x,y)
+	public boolean setValue(int x, int y, boolean value) {
 		if (x >= 0 && y >= 0 && x < width && y < height) {
 			blockGrid.get(x).get(y).state = value;
-			blockGrid.get(x).get(y).color = color;
 			return true;
 		}
 
 		return false;
 	}
+	
+	// Set block value at coordinates (x,y) and also the tetromino name
+	public boolean setValue(int x, int y, boolean value, TetrominoNames name) {
+		if (x >= 0 && y >= 0 && x < width && y < height) {
+			blockGrid.get(x).get(y).state = value;
+			blockGrid.get(x).get(y).name = name;
+			return true;
+		}
+
+		return false;
+	}
+	
+	
 
 	// Set block at coordinates (x,y)
 	public boolean setBlock(int x, int y, Block block) {

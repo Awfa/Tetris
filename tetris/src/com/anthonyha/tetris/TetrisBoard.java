@@ -3,7 +3,6 @@ package com.anthonyha.tetris;
 import java.util.ArrayDeque;
 
 import com.anthonyha.tetris.Tetromino.TetrominoNames;
-import com.badlogic.gdx.graphics.Color;
 
 public class TetrisBoard {
 	private static final int BOARD_WIDTH = 12;
@@ -40,7 +39,6 @@ public class TetrisBoard {
 	public boolean left, right, down, held;
 
 	public TetrisBoard(long seed) {
-		Color borderColor = Color.BLACK;
 		tetrominoPos = new Vector2(0, 0);
 		left = false;
 		right = false;
@@ -53,19 +51,19 @@ public class TetrisBoard {
 		gameGrid = new BlockGrid(BOARD_WIDTH, BOARD_HEIGHT);
 
 		for (int x = 0; x < BOARD_WIDTH; ++x) {
-			gameGrid.setValue(x, 0, true, Color.BLACK);
-			gameGrid.setValue(x, BOARD_HEIGHT - 1, true, borderColor);
+			gameGrid.setValue(x, 0, true);
+			gameGrid.setValue(x, BOARD_HEIGHT - 1, true);
 		}
 
 		for (int y = 0; y < BOARD_HEIGHT; ++y) {
-			gameGrid.setValue(0, y, true, Color.BLACK);
-			gameGrid.setValue(BOARD_WIDTH - 1, y, true, borderColor);
+			gameGrid.setValue(0, y, true);
+			gameGrid.setValue(BOARD_WIDTH - 1, y, true);
 		}
 		
 		spawnField = new BlockGrid(BOARD_WIDTH-2, BOARD_TOP_MARGIN);
 		for (int x = 0; x < BOARD_WIDTH-2; ++x) {
 			for (int y = 0; y < BOARD_TOP_MARGIN; ++y) {
-				spawnField.setValue(x, y, true, Color.BLACK);
+				spawnField.setValue(x, y, true);
 			}
 		}
 		

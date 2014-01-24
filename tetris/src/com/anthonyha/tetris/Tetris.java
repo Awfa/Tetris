@@ -1,7 +1,10 @@
 package com.anthonyha.tetris;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
+import com.anthonyha.tetris.Tetromino.TetrominoNames;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
@@ -9,37 +12,66 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class Tetris implements ApplicationListener, InputProcessor {
 	private OrthographicCamera camera;
 	private ShapeRenderer shapeRenderer;
 	private SpriteBatch spriteBatch;
-	private BitmapFont bitmapFont;
-
+	
+	private BitmapFont quantico48;
+	private BitmapFont quantico72;
+	
+	private TextureAtlas gameTextures;
+	
+	private Sprite background;
+	private Sprite board;
+	private Map<TetrominoNames, Sprite> blockSprites;
+	
 	private TetrisBoard gameBoard;
-
+	
+	
+	
 	@Override
 	public void create() {
-		float w = Gdx.graphics.getWidth();
-		float h = Gdx.graphics.getHeight();
+		float w = 1920f;
+		float h = 1080f;
 
-		int scale = 30;
+		int scale = 32;
+		
+		FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/quantico/Quantico-Regular.otf"));
+		
+		gameTextures = new TextureAtlas(Gdx.files.internal("textures/TetrisGame.pack"));
+		
+		blockSprites = new HashMap<TetrominoNames, Sprite>();
+		blockSprites.put(TetrominoNames.I, gameTextures.createSprite("I"));
+		blockSprites.put(TetrominoNames.O, gameTextures.createSprite("O"));
+		blockSprites.put(TetrominoNames.T, gameTextures.createSprite("T"));
+		blockSprites.put(TetrominoNames.S, gameTextures.createSprite("S"));
+		blockSprites.put(TetrominoNames.Z, gameTextures.createSprite("Z"));
+		blockSprites.put(TetrominoNames.J, gameTextures.createSprite("J"));
+		blockSprites.put(TetrominoNames.L, gameTextures.createSprite("L"));
+		
+		background = gameTextures.createSprite("Background");
+		board = gameTextures.createSprite("Board");
 		gameBoard = new TetrisBoard(scale);
 
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, w, h);
-
-		shapeRenderer = new ShapeRenderer();
-		shapeRenderer.translate(w / 2 - scale * (gameBoard.gameGrid.getWidth() / 2), h / 2 - scale * (gameBoard.gameGrid.getHeight() / 2), 0);
-		shapeRenderer.scale(scale, scale, 1);
+		camera.translate(-(w - background.getRegionWidth()) / 2f, -(h - background.getRegionHeight()) / 2f);
+		camera.update();
 
 		spriteBatch = new SpriteBatch();
 
-		bitmapFont = new BitmapFont();
-		bitmapFont.setColor(Color.BLACK);
+		quantico48 = fontGenerator.generateFont(48);
+		quantico72 = fontGenerator.generateFont(72);
 
 		Gdx.input.setInputProcessor(this);
 	}
@@ -51,75 +83,47 @@ public class Tetris implements ApplicationListener, InputProcessor {
 
 	@Override
 	public void render() {
-		Gdx.gl.glClearColor(1, 1, 1, 1);
+		Gdx.gl.glClearColor(1f, 1f, 1f, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
 		gameBoard.update(Gdx.graphics.getDeltaTime());
-
+		
 		spriteBatch.setProjectionMatrix(camera.combined);
 		spriteBatch.begin();
-
-		// Render score
-		bitmapFont.draw(spriteBatch, "Score: " + gameBoard.getScore(),
-				350, Gdx.graphics.getHeight() - 10);
-
-		spriteBatch.end();
-
-		shapeRenderer.setProjectionMatrix(camera.combined);
-		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 		
-		// Render background
-		shapeRenderer.setColor(Color.GRAY);
-		shapeRenderer.rect(1, 1, gameBoard.gameGrid.getWidth()-2, gameBoard.gameGrid.getHeight()-4);
-		
+		// Render Board
+		spriteBatch.draw(board, 800, 1080-860);
 		
 		// Render GameBoard
 		for (int x = 1; x < gameBoard.gameGrid.getWidth()-1; ++x) {
 			for (int y = 1; y < gameBoard.gameGrid.getHeight()-4; ++y) {
 				if (gameBoard.gameGrid.getValue(x, y)) {
-					shapeRenderer.setColor(gameBoard.gameGrid.getBlock(x, y).color);
-					shapeRenderer.rect(x, y, 1, 1);
+					Sprite block = blockSprites.get(gameBoard.gameGrid.getBlock(x, y).name);
+					
+					block.setPosition((x - 1) * block.getWidth() + 800, (y - 1) * block.getHeight() + 1080-860);
+					block.draw(spriteBatch);
 				}
 			}
 		}
-
+		
 		// Render Active Tetromino
+		Sprite activeBlockSprite = blockSprites.get(gameBoard.activeTetromino.getName());
 		for (int x = 0; x < gameBoard.activeTetromino.blockGrid.getWidth(); ++x) {
 			for (int y = 0; y < gameBoard.activeTetromino.blockGrid.getHeight(); ++y) {
 				if (gameBoard.activeTetromino.blockGrid.getValue(x, y)) {
-					shapeRenderer.setColor(gameBoard.activeTetromino.blockGrid.getBlock(x, y).color);
-					shapeRenderer.rect(x + gameBoard.tetrominoPos.x, y + gameBoard.tetrominoPos.y, 1, 1);
+					activeBlockSprite.setPosition((gameBoard.tetrominoPos.x + x - 1) * activeBlockSprite.getWidth() + 800, (gameBoard.tetrominoPos.y + y - 1) * activeBlockSprite.getHeight() + 1080-860);
+					activeBlockSprite.draw(spriteBatch);
 				}
 			}
 		}
 		
-		// Render Held Piece
-		if (gameBoard.heldTetromino != null) {
-			for (int x = 0; x < gameBoard.heldTetromino.blockGrid.getWidth(); ++x) {
-				for (int y = 0; y < gameBoard.heldTetromino.blockGrid.getHeight(); ++y) {
-					if (gameBoard.heldTetromino.blockGrid.getValue(x, y)) {
-						shapeRenderer.setColor(gameBoard.heldTetromino.blockGrid.getBlock(x, y).color);
-						shapeRenderer.rect(x-6, y+19, 1, 1);
-					}
-				}
-			}
-		}
+		background.draw(spriteBatch);
 		
-		// Render Queue
-		int queueDisplacement = 0;
-		for (Iterator<Tetromino> iter = gameBoard.tetrominoQueue.iterator(); iter.hasNext(); ++queueDisplacement) {
-			Tetromino t = iter.next();
-			for (int x = 0; x < t.blockGrid.getWidth(); ++x) {
-				for (int y = 0; y < t.blockGrid.getHeight(); ++y) {
-					if (t.blockGrid.getValue(x, y)) {
-						shapeRenderer.setColor(t.blockGrid.getBlock(x, y).color);
-						shapeRenderer.rect(x+13, y+19 - (queueDisplacement*4), 1, 1);
-					}
-				}
-			}
-		}
+		// Render Score
+		quantico48.draw(spriteBatch, "SCORE:", 874, 1080-30);
+		quantico72.draw(spriteBatch, String.valueOf(gameBoard.getScore()), 809, 1080-100);
 		
-		shapeRenderer.end();
+		spriteBatch.end();
 	}
 
 	@Override
@@ -155,6 +159,10 @@ public class Tetris implements ApplicationListener, InputProcessor {
 			gameBoard.hardDrop();
 		} else if (keycode == Keys.SHIFT_LEFT) {
 			gameBoard.holdPiece();
+		} else if (keycode == Keys.ESCAPE) {
+			Gdx.graphics.setDisplayMode(1366, 768, false);
+		} else if (keycode == Keys.BACKSPACE) {
+			Gdx.graphics.setDisplayMode(Gdx.graphics.getDesktopDisplayMode().width, Gdx.graphics.getDesktopDisplayMode().height, true);
 		}
 
 		return false;

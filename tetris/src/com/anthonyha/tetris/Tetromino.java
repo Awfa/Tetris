@@ -8,7 +8,7 @@ public class Tetromino {
 	private TetrominoNames name;
 	
 	public enum TetrominoNames {
-		I, O, T, S, Z, J, L
+		I, O, T, S, Z, J, L, NOTHING
 	}
 	
 	public static final Map<TetrominoNames, Vector2> spawnOffsets;
@@ -21,6 +21,18 @@ public class Tetromino {
 		spawnOffsets.put(TetrominoNames.Z, new Vector2(0, -1));
 		spawnOffsets.put(TetrominoNames.J, new Vector2(0, -1));
 		spawnOffsets.put(TetrominoNames.L, new Vector2(0, -1));
+	}
+	
+	public static final Map<TetrominoNames, Vector2> origins;
+	static {
+		origins = new HashMap<TetrominoNames, Vector2>();
+		origins.put(TetrominoNames.I, new Vector2(1, 2));
+		origins.put(TetrominoNames.O, new Vector2(1, 1));
+		origins.put(TetrominoNames.T, new Vector2(0, 1));
+		origins.put(TetrominoNames.S, new Vector2(0, 1));
+		origins.put(TetrominoNames.Z, new Vector2(0, 1));
+		origins.put(TetrominoNames.J, new Vector2(0, 1));
+		origins.put(TetrominoNames.L, new Vector2(0, 1));
 	}
 	
 	public enum RotationState {

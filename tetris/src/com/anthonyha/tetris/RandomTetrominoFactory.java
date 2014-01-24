@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.anthonyha.tetris.Tetromino.TetrominoNames;
-import com.badlogic.gdx.graphics.Color;
 
 public class RandomTetrominoFactory implements TetrominoFactory {
 	
@@ -52,53 +51,55 @@ public class RandomTetrominoFactory implements TetrominoFactory {
 		
 		switch (tetrominoName) {
 		case I:
-			grid = new BlockGrid(5, 5);
-			grid.setValue(1, 2, true, Color.CYAN);
-			grid.setValue(2, 2, true, Color.CYAN);
-			grid.setValue(3, 2, true, Color.CYAN);
-			grid.setValue(4, 2, true, Color.CYAN);
+			grid = new BlockGrid(5, 5, tetrominoName);
+			grid.setValue(1, 2, true);
+			grid.setValue(2, 2, true);
+			grid.setValue(3, 2, true);
+			grid.setValue(4, 2, true);
 			break;
 		case O:
-			grid = new BlockGrid(3, 3);
-			grid.setValue(1, 1, true, Color.YELLOW);
-			grid.setValue(1, 2, true, Color.YELLOW);
-			grid.setValue(2, 1, true, Color.YELLOW);
-			grid.setValue(2, 2, true, Color.YELLOW);
+			grid = new BlockGrid(3, 3, tetrominoName);
+			grid.setValue(1, 1, true);
+			grid.setValue(1, 2, true);
+			grid.setValue(2, 1, true);
+			grid.setValue(2, 2, true);
 			break;
 		case T:
-			grid = new BlockGrid(3, 3);
-			grid.setValue(0, 1, true, Color.MAGENTA);
-			grid.setValue(1, 1, true, Color.MAGENTA);
-			grid.setValue(1, 2, true, Color.MAGENTA);
-			grid.setValue(2, 1, true, Color.MAGENTA);
+			grid = new BlockGrid(3, 3, tetrominoName);
+			grid.setValue(0, 1, true);
+			grid.setValue(1, 1, true);
+			grid.setValue(1, 2, true);
+			grid.setValue(2, 1, true);
 			break;
 		case S:
-			grid = new BlockGrid(3, 3);
-			grid.setValue(0, 1, true, Color.GREEN);
-			grid.setValue(1, 1, true, Color.GREEN);
-			grid.setValue(1, 2, true, Color.GREEN);
-			grid.setValue(2, 2, true, Color.GREEN);
+			grid = new BlockGrid(3, 3, tetrominoName);
+			grid.setValue(0, 1, true);
+			grid.setValue(1, 1, true);
+			grid.setValue(1, 2, true);
+			grid.setValue(2, 2, true);
 			break;
 		case Z:
-			grid = new BlockGrid(3, 3);
-			grid.setValue(0, 2, true, Color.RED);
-			grid.setValue(1, 1, true, Color.RED);
-			grid.setValue(1, 2, true, Color.RED);
-			grid.setValue(2, 1, true, Color.RED);
+			grid = new BlockGrid(3, 3, tetrominoName);
+			grid.setValue(0, 2, true);
+			grid.setValue(1, 1, true);
+			grid.setValue(1, 2, true);
+			grid.setValue(2, 1, true);
 			break;
 		case J:
-			grid = new BlockGrid(3, 3);
-			grid.setValue(0, 1, true, Color.BLUE);
-			grid.setValue(0, 2, true, Color.BLUE);
-			grid.setValue(1, 1, true, Color.BLUE);
-			grid.setValue(2, 1, true, Color.BLUE);
+			grid = new BlockGrid(3, 3, tetrominoName);
+			grid.setValue(0, 1, true);
+			grid.setValue(0, 2, true);
+			grid.setValue(1, 1, true);
+			grid.setValue(2, 1, true);
 			break;
 		case L:
-			grid = new BlockGrid(3, 3);
-			grid.setValue(0, 1, true, Color.ORANGE);
-			grid.setValue(1, 1, true, Color.ORANGE);
-			grid.setValue(2, 1, true, Color.ORANGE);
-			grid.setValue(2, 2, true, Color.ORANGE);
+			grid = new BlockGrid(3, 3, tetrominoName);
+			grid.setValue(0, 1, true);
+			grid.setValue(1, 1, true);
+			grid.setValue(2, 1, true);
+			grid.setValue(2, 2, true);
+			break;
+		case NOTHING:
 			break;
 		}
 		
@@ -114,6 +115,8 @@ public class RandomTetrominoFactory implements TetrominoFactory {
 			return new Tetromino(grid, iOffsets, tetrominoName);
 		case O:
 			return new Tetromino(grid, oOffsets, tetrominoName);
+		case NOTHING:
+			break;
 		}
 		return null;
 		
