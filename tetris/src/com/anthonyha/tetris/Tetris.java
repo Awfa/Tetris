@@ -15,11 +15,9 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class Tetris implements ApplicationListener, InputProcessor {
 	private OrthographicCamera camera;
-	private ShapeRenderer shapeRenderer;
 	private SpriteBatch spriteBatch;
 	
 	private BitmapFont quantico48;
@@ -68,13 +66,20 @@ public class Tetris implements ApplicationListener, InputProcessor {
 
 		quantico48 = fontGenerator.generateFont(48);
 		quantico72 = fontGenerator.generateFont(72);
-
+		fontGenerator.dispose();
+		
 		Gdx.input.setInputProcessor(this);
+		
 	}
 
 	@Override
 	public void dispose() {
-		shapeRenderer.dispose();
+		spriteBatch.dispose();
+		
+		quantico48.dispose();
+		quantico72.dispose();
+		
+		gameTextures.dispose();
 	}
 
 	@Override
