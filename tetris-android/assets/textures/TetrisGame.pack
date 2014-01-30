@@ -66,3 +66,10 @@ Z
   orig: 32, 32
   offset: 0, 0
   index: -1
+particle
+  rotate: false
+  xy: 323, 659
+  size: 8, 16
+  orig: 8, 16
+  offset: 0, 0
+  index: -1

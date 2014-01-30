@@ -3,6 +3,7 @@ package com.anthonyha.tetris;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.anthonyha.tetris.MessageSystem.Message;
 import com.anthonyha.tetris.Tetromino.TetrominoNames;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
@@ -11,12 +12,16 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
+import com.badlogic.gdx.graphics.g2d.ParticleEffectPool.PooledEffect;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.utils.Array;
 
-public class Tetris implements ApplicationListener, InputProcessor {
+public class Tetris implements ApplicationListener, InputProcessor, MessageListener {
 	private OrthographicCamera camera;
 	private SpriteBatch spriteBatch;
 	
@@ -30,8 +35,10 @@ public class Tetris implements ApplicationListener, InputProcessor {
 	private Map<TetrominoNames, Sprite> blockSprites;
 	
 	private TetrisBoard gameBoard;
+	private MessageSystem messageSystem;
 	
-	
+	ParticleEffectPool tetrisExplosionEffectPool;
+	Array<PooledEffect> effects;
 	
 	@Override
 	public void create() {
@@ -40,10 +47,15 @@ public class Tetris implements ApplicationListener, InputProcessor {
 
 		int scale = 32;
 		
-		FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/quantico/Quantico-Regular.otf"));
+		messageSystem = new MessageSystem();
+		messageSystem.add(this, Message.ROW_CLEARED);
 		
+		spriteBatch = new SpriteBatch();
+		
+		// Texture loading
 		gameTextures = new TextureAtlas(Gdx.files.internal("textures/TetrisGame.pack"));
 		
+		// Mapping each tetromino name to its respective sprite
 		blockSprites = new HashMap<TetrominoNames, Sprite>();
 		blockSprites.put(TetrominoNames.I, gameTextures.createSprite("I"));
 		blockSprites.put(TetrominoNames.O, gameTextures.createSprite("O"));
@@ -53,20 +65,30 @@ public class Tetris implements ApplicationListener, InputProcessor {
 		blockSprites.put(TetrominoNames.J, gameTextures.createSprite("J"));
 		blockSprites.put(TetrominoNames.L, gameTextures.createSprite("L"));
 		
+		// Create background and board sprites
 		background = gameTextures.createSprite("Background");
 		board = gameTextures.createSprite("Board");
-		gameBoard = new TetrisBoard(scale);
+		
+		// Create game model
+		gameBoard = new TetrisBoard(scale, messageSystem);
 
+		// Create camera and center it
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, w, h);
 		camera.translate(-(w - background.getRegionWidth()) / 2f, -(h - background.getRegionHeight()) / 2f);
 		camera.update();
 
-		spriteBatch = new SpriteBatch();
-
+		// Create fonts used by the game
+		FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/quantico/Quantico-Bold.otf"));
 		quantico48 = fontGenerator.generateFont(48);
 		quantico72 = fontGenerator.generateFont(72);
 		fontGenerator.dispose();
+		
+		// Create particle effects
+		ParticleEffect tetrisExplosionEffect = new ParticleEffect();
+		tetrisExplosionEffect.load(Gdx.files.internal("effects/BlockExplosion.p"), gameTextures);
+		tetrisExplosionEffectPool = new ParticleEffectPool(tetrisExplosionEffect, 1, 2);
+		effects = new Array<PooledEffect>();
 		
 		Gdx.input.setInputProcessor(this);
 		
@@ -123,6 +145,15 @@ public class Tetris implements ApplicationListener, InputProcessor {
 		// Render Score
 		quantico48.draw(spriteBatch, "SCORE:", 874, 1080-30);
 		quantico72.draw(spriteBatch, String.valueOf(gameBoard.getScore()), 809, 1080-100);
+		
+		for (int i = effects.size - 1; i >= 0; i--) {
+		    PooledEffect effect = effects.get(i);
+		    effect.draw(spriteBatch, Gdx.graphics.getDeltaTime());
+		    if (effect.isComplete()) {
+		        effect.free();
+		        effects.removeIndex(i);
+		    }
+		}
 		
 		spriteBatch.end();
 	}
@@ -217,5 +248,23 @@ public class Tetris implements ApplicationListener, InputProcessor {
 	public boolean scrolled(int amount) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+	
+	@Override
+	public void recieveMessage(MessageSystem.Message message) {
+		
+	}
+	
+	@Override
+	public void recieveMessage(MessageSystem.Message message, int extra) {
+		switch(message) {
+		case ROW_CLEARED:
+			PooledEffect effect = tetrisExplosionEffectPool.obtain();
+			effect.setPosition(800+160, 1080-860+extra*32);
+			effects.add(effect);
+			break;
+		default:
+			break;
+		}
 	}
 }

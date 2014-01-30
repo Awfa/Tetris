@@ -2,6 +2,7 @@ package com.anthonyha.tetris;
 
 import java.util.ArrayDeque;
 
+import com.anthonyha.tetris.MessageSystem.Message;
 import com.anthonyha.tetris.Tetromino.TetrominoNames;
 
 public class TetrisBoard {
@@ -19,6 +20,8 @@ public class TetrisBoard {
 	private static final int[] scoreMultipliers = {0, 100, 300, 500, 800};
 	
 	private TetrominoFactory factory;
+	private MessageSystem messageSystem;
+	
 	private float fallTimer = 0f;
 	private float lockTimer = 0f;
 	private float moveTimer = 0f;
@@ -38,12 +41,14 @@ public class TetrisBoard {
 	public Vector2 tetrominoPos;
 	public boolean left, right, down, held;
 
-	public TetrisBoard(long seed) {
+	public TetrisBoard(long seed, MessageSystem messageSystem) {
 		tetrominoPos = new Vector2(0, 0);
 		left = false;
 		right = false;
 		down = false;
 
+		this.messageSystem = messageSystem;
+		
 		factory = new RandomTetrominoFactory();
 		factory.setSeed(seed);
 
@@ -244,6 +249,7 @@ public class TetrisBoard {
 	
 				if (blocksInALine == BOARD_WIDTH - 2) {
 					clearLine(y);
+					messageSystem.postMessage(Message.ROW_CLEARED, y+lines-1);
 					++lines;
 					--y; // Decrement y so that it will check again
 				}
