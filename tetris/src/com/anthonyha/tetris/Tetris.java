@@ -144,7 +144,17 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 		
 		// Render Score
 		quantico48.draw(spriteBatch, "SCORE:", 874, 1080-30);
-		quantico72.draw(spriteBatch, String.valueOf(gameBoard.getScore()), 809, 1080-100);
+		
+		// Format the score to take 6 digits and a comma in between
+		String score = String.valueOf(gameBoard.getScore());
+		StringBuilder scoreBuilder = new StringBuilder();
+		for (int i = 0; i < 6 - score.length(); ++i) {
+			scoreBuilder.append(0);
+		}
+		scoreBuilder.append(score);
+		//scoreBuilder.insert(3, ',');
+		
+		quantico72.draw(spriteBatch, scoreBuilder.toString(), 818, 1080-100);
 		
 		for (int i = effects.size - 1; i >= 0; i--) {
 		    PooledEffect effect = effects.get(i);
