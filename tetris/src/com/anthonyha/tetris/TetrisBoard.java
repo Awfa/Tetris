@@ -11,7 +11,7 @@ public class TetrisBoard {
 	private static final int QUEUE_LENGTH = 3;
 	private static final float LOCK_TIME = 0.5f;
 	private static final float FALL_TIME = 1f;
-	private static final float SOFT_DROP_MULTIPLIER = 5f;
+	private static final float SOFT_DROP_TIME = 0.06818181818f;
 	private static final float DELAYED_AUTO_SHIFT_TIME = 0.3f;
 	private static final float AUTO_MOVEMENT_DELAY = 0.05f;
 	
@@ -106,21 +106,29 @@ public class TetrisBoard {
 			// If lock time has been exceeded, lock and spawn a new tetromino
 			if (lockTimer >= LOCK_TIME) {
 				if (lockTetromino()) {
-					spawnTetromino();
 					lockTimer -= LOCK_TIME;
 				}
 			} else {
 				fallTimer += deltaTime;
 			}
 			
-			// TODO Fix up soft drop, and add scoring for soft drop
 			// Make the piece fall
-			if (fallTimer >= FALL_TIME / (down ? SOFT_DROP_MULTIPLIER : 1)) {
+			if (down && fallTimer >= SOFT_DROP_TIME) {
+				if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y - 1)) {
+					--tetrominoPos.y;
+					score += 1;
+				}
+				
+				// Consume rest of extra time
+				while (fallTimer >= SOFT_DROP_TIME) {
+					fallTimer -= SOFT_DROP_TIME;
+				}
+			} else if (fallTimer >= FALL_TIME) {
 				if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y - 1)) {
 					--tetrominoPos.y;
 				}
 	
-				fallTimer -= FALL_TIME / (down ? SOFT_DROP_MULTIPLIER : 1);
+				fallTimer -= FALL_TIME;
 			}
 		}
 	}
@@ -131,6 +139,8 @@ public class TetrisBoard {
 				--tetrominoPos.y;
 				score += 2;
 			}
+			
+			lockTetromino();
 		}
 	}
 
@@ -272,6 +282,10 @@ public class TetrisBoard {
 				lineCleared = false;
 			}
 			
+			// Spawn new piece
+			spawnTetromino();
+			
+			// Make it able for players to hold the piece again
 			held = false;
 			return true;
 		}
