@@ -213,6 +213,10 @@ public class TetrisBoard {
 		return score;
 	}
 	
+	public int getLevel() {
+		return level;
+	}
+	
 	public boolean isLoss() {
 		return loss;
 	}

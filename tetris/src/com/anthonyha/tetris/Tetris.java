@@ -126,6 +126,8 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 		TetrominoNames blockName;
 		Sprite blockSprite;
 		
+		StringBuilder stringBuilder = new StringBuilder();
+		
 		Gdx.gl.glClearColor(1f, 1f, 1f, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
@@ -173,12 +175,11 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 		
 		// Format the score to take 6 digits and a comma in between
 		String score = String.valueOf(gameBoard.getScore());
-		StringBuilder scoreBuilder = new StringBuilder();
 		for (int i = 0; i < 6 - score.length(); ++i) {
-			scoreBuilder.append(0);
+			stringBuilder.append(0);
 		}
-		scoreBuilder.append(score);
-		quantico72.draw(spriteBatch, scoreBuilder.toString(), 818, 1080-100);
+		stringBuilder.append(score);
+		quantico72.draw(spriteBatch, stringBuilder.toString(), 818, 1080-100);
 		
 		// Render particle effects
 		for (int i = effects.size - 1; i >= 0; i--) {
@@ -226,6 +227,17 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 				}
 			}
 		}
+		
+		// Render score
+		String level = String.valueOf(gameBoard.getLevel());
+		stringBuilder.delete(0, stringBuilder.length());
+		for (int i = 0; i < 2 - level.length(); ++i) {
+			stringBuilder.append(0);
+		}
+		stringBuilder.append(level);
+		
+		quantico42.draw(spriteBatch, "Level", 654, 1080-506);
+		quantico64.draw(spriteBatch, stringBuilder.toString(), 665,1080-598);
 		spriteBatch.end();
 	}
 	
