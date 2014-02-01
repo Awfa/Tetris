@@ -1,8 +1,5 @@
 package com.anthonyha.tetris;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.anthonyha.tetris.MessageSystem.Message;
 import com.anthonyha.tetris.Tetromino.TetrominoNames;
 import com.badlogic.gdx.ApplicationListener;
@@ -20,25 +17,42 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ObjectMap;
 
 public class Tetris implements ApplicationListener, InputProcessor, MessageListener {
 	private OrthographicCamera camera;
 	private SpriteBatch spriteBatch;
 	
+	private BitmapFont quantico42;
 	private BitmapFont quantico48;
+	private BitmapFont quantico64;
 	private BitmapFont quantico72;
 	
 	private TextureAtlas gameTextures;
 	
 	private Sprite background;
 	private Sprite board;
-	private Map<TetrominoNames, Sprite> blockSprites;
+	private ObjectMap<TetrominoNames, Sprite> blockSprites;
+	
+	private static final ObjectMap<TetrominoNames, Vector2> tetrominoRenderOffsets;
+	static {
+		tetrominoRenderOffsets = new ObjectMap<TetrominoNames, Vector2>();
+		tetrominoRenderOffsets.put(TetrominoNames.I, new Vector2(8, 100));
+		tetrominoRenderOffsets.put(TetrominoNames.O, new Vector2(40, 84));
+		tetrominoRenderOffsets.put(TetrominoNames.T, new Vector2(24, 84));
+		tetrominoRenderOffsets.put(TetrominoNames.S, new Vector2(24, 84));
+		tetrominoRenderOffsets.put(TetrominoNames.Z, new Vector2(24, 84));
+		tetrominoRenderOffsets.put(TetrominoNames.J, new Vector2(24, 84));
+		tetrominoRenderOffsets.put(TetrominoNames.L, new Vector2(24, 84));
+	}
 	
 	private TetrisBoard gameBoard;
 	private MessageSystem messageSystem;
 	
 	ParticleEffectPool tetrisExplosionEffectPool;
 	Array<PooledEffect> effects;
+	
+	
 	
 	@Override
 	public void create() {
@@ -56,7 +70,7 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 		gameTextures = new TextureAtlas(Gdx.files.internal("textures/TetrisGame.pack"));
 		
 		// Mapping each tetromino name to its respective sprite
-		blockSprites = new HashMap<TetrominoNames, Sprite>();
+		blockSprites = new ObjectMap<TetrominoNames, Sprite>();
 		blockSprites.put(TetrominoNames.I, gameTextures.createSprite("I"));
 		blockSprites.put(TetrominoNames.O, gameTextures.createSprite("O"));
 		blockSprites.put(TetrominoNames.T, gameTextures.createSprite("T"));
@@ -79,8 +93,10 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 		camera.update();
 
 		// Create fonts used by the game
-		FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/quantico/Quantico-Bold.otf"));
+		FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/quantico/Quantico-Regular.otf"));
+		quantico42 = fontGenerator.generateFont(42);
 		quantico48 = fontGenerator.generateFont(48);
+		quantico64 = fontGenerator.generateFont(64);
 		quantico72 = fontGenerator.generateFont(72);
 		fontGenerator.dispose();
 		
@@ -106,6 +122,8 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 
 	@Override
 	public void render() {
+		Sprite blockSprite;
+		TetrominoNames blockName;
 		Gdx.gl.glClearColor(1f, 1f, 1f, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
@@ -114,10 +132,10 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 		spriteBatch.setProjectionMatrix(camera.combined);
 		spriteBatch.begin();
 		
-		// Render Board
+		// Render board
 		spriteBatch.draw(board, 800, 1080-860);
 		
-		// Render GameBoard
+		// Render game grid
 		for (int x = 1; x < gameBoard.gameGrid.getWidth()-1; ++x) {
 			for (int y = 1; y < gameBoard.gameGrid.getHeight()-4; ++y) {
 				if (gameBoard.gameGrid.getValue(x, y)) {
@@ -129,17 +147,20 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 			}
 		}
 		
-		// Render Active Tetromino
-		Sprite activeBlockSprite = blockSprites.get(gameBoard.activeTetromino.getName());
+		// Render active tetromino
+		blockName = gameBoard.activeTetromino.getName();
+		blockSprite = blockSprites.get(blockName);
 		for (int x = 0; x < gameBoard.activeTetromino.blockGrid.getWidth(); ++x) {
 			for (int y = 0; y < gameBoard.activeTetromino.blockGrid.getHeight(); ++y) {
 				if (gameBoard.activeTetromino.blockGrid.getValue(x, y)) {
-					activeBlockSprite.setPosition((gameBoard.tetrominoPos.x + x - 1) * activeBlockSprite.getWidth() + 800, (gameBoard.tetrominoPos.y + y - 1) * activeBlockSprite.getHeight() + 1080-860);
-					activeBlockSprite.draw(spriteBatch);
+					blockSprite.setPosition((gameBoard.tetrominoPos.x + x - 1) * blockSprite.getWidth() + 800, (gameBoard.tetrominoPos.y + y - 1) * blockSprite.getHeight() + 1080-860);
+					blockSprite.draw(spriteBatch);
 				}
 			}
 		}
 		
+		// Draw the background over the board so it cuts off the piece when it spawns above the game board area
+		// This is why we draw the background after the board, grid, and active tetromino
 		background.draw(spriteBatch);
 		
 		// Render Score
@@ -152,8 +173,6 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 			scoreBuilder.append(0);
 		}
 		scoreBuilder.append(score);
-		//scoreBuilder.insert(3, ',');
-		
 		quantico72.draw(spriteBatch, scoreBuilder.toString(), 818, 1080-100);
 		
 		for (int i = effects.size - 1; i >= 0; i--) {
@@ -165,9 +184,25 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 		    }
 		}
 		
+		// Render hold
+		quantico42.draw(spriteBatch, "Hold", 658, 1080-154);
+		
+		if (gameBoard.heldTetromino != null) {
+			blockName = gameBoard.heldTetromino.getName();
+			blockSprite = blockSprites.get(blockName);
+			for (int x = 0; x < gameBoard.heldTetromino.blockGrid.getWidth(); ++x) {
+				for (int y = 0; y < gameBoard.heldTetromino.blockGrid.getHeight(); ++y) {
+					if (gameBoard.heldTetromino.blockGrid.getValue(x, y)) {
+						blockSprite.setPosition((x - Tetromino.origins.get(blockName).x) * blockSprite.getWidth() + 632 + tetrominoRenderOffsets.get(blockName).x,
+								(y - Tetromino.origins.get(blockName).y) * blockSprite.getHeight() + 1080-452 + tetrominoRenderOffsets.get(blockName).y);
+						blockSprite.draw(spriteBatch);
+					}
+				}
+			}
+		}
 		spriteBatch.end();
 	}
-
+	
 	@Override
 	public void resize(int width, int height) {
 	}
