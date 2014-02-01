@@ -1,9 +1,8 @@
 package com.anthonyha.tetris;
 
-import java.util.ArrayDeque;
-
 import com.anthonyha.tetris.MessageSystem.Message;
 import com.anthonyha.tetris.Tetromino.TetrominoNames;
+import com.badlogic.gdx.utils.Array;
 
 public class TetrisBoard {
 	private static final int BOARD_WIDTH = 12;
@@ -36,7 +35,7 @@ public class TetrisBoard {
 	public BlockGrid gameGrid;
 	public Tetromino activeTetromino;
 	public Tetromino heldTetromino;
-	public ArrayDeque<Tetromino> tetrominoQueue;
+	public Array<Tetromino> tetrominoQueue;
 
 	public Vector2 tetrominoPos;
 	public boolean left, right, down, held;
@@ -72,7 +71,7 @@ public class TetrisBoard {
 			}
 		}
 		
-		tetrominoQueue = new ArrayDeque<Tetromino>(QUEUE_LENGTH);
+		tetrominoQueue = new Array<Tetromino>(QUEUE_LENGTH);
 
 		for (int i = 0; i < QUEUE_LENGTH; ++i) {
 			tetrominoQueue.add(factory.getPiece());
@@ -275,7 +274,7 @@ public class TetrisBoard {
 	}
 
 	private void spawnTetromino() {
-		spawnTetromino(tetrominoQueue.remove());
+		spawnTetromino(tetrominoQueue.removeIndex(0));
 		tetrominoQueue.add(factory.getPiece());
 	}
 	

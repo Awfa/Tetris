@@ -1,6 +1,6 @@
 package com.anthonyha.tetris;
 
-import java.util.*;
+import com.badlogic.gdx.utils.ObjectMap;
 
 public class Tetromino {
 
@@ -11,9 +11,9 @@ public class Tetromino {
 		I, O, T, S, Z, J, L, NOTHING
 	}
 	
-	public static final Map<TetrominoNames, Vector2> spawnOffsets;
+	public static final ObjectMap<TetrominoNames, Vector2> spawnOffsets;
 	static {
-		spawnOffsets = new HashMap<TetrominoNames, Vector2>();
+		spawnOffsets = new ObjectMap<TetrominoNames, Vector2>();
 		spawnOffsets.put(TetrominoNames.I, new Vector2(0, 0));
 		spawnOffsets.put(TetrominoNames.O, new Vector2(0, -1));
 		spawnOffsets.put(TetrominoNames.T, new Vector2(0, -1));
@@ -23,9 +23,9 @@ public class Tetromino {
 		spawnOffsets.put(TetrominoNames.L, new Vector2(0, -1));
 	}
 	
-	public static final Map<TetrominoNames, Vector2> origins;
+	public static final ObjectMap<TetrominoNames, Vector2> origins;
 	static {
-		origins = new HashMap<TetrominoNames, Vector2>();
+		origins = new ObjectMap<TetrominoNames, Vector2>();
 		origins.put(TetrominoNames.I, new Vector2(1, 2));
 		origins.put(TetrominoNames.O, new Vector2(1, 1));
 		origins.put(TetrominoNames.T, new Vector2(0, 1));

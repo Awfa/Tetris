@@ -122,8 +122,10 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 
 	@Override
 	public void render() {
-		Sprite blockSprite;
+		Tetromino tetromino;
 		TetrominoNames blockName;
+		Sprite blockSprite;
+		
 		Gdx.gl.glClearColor(1f, 1f, 1f, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
@@ -139,21 +141,24 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 		for (int x = 1; x < gameBoard.gameGrid.getWidth()-1; ++x) {
 			for (int y = 1; y < gameBoard.gameGrid.getHeight()-4; ++y) {
 				if (gameBoard.gameGrid.getValue(x, y)) {
-					Sprite block = blockSprites.get(gameBoard.gameGrid.getBlock(x, y).name);
+					blockName = gameBoard.gameGrid.getBlock(x, y).name;
+					blockSprite = blockSprites.get(blockName);
 					
-					block.setPosition((x - 1) * block.getWidth() + 800, (y - 1) * block.getHeight() + 1080-860);
-					block.draw(spriteBatch);
+					blockSprite.setPosition((x - 1) * blockSprite.getWidth() + 800, (y - 1) * blockSprite.getHeight() + 1080-860);
+					blockSprite.draw(spriteBatch);
 				}
 			}
 		}
 		
 		// Render active tetromino
-		blockName = gameBoard.activeTetromino.getName();
+		tetromino = gameBoard.activeTetromino;
+		blockName = tetromino.getName();
 		blockSprite = blockSprites.get(blockName);
-		for (int x = 0; x < gameBoard.activeTetromino.blockGrid.getWidth(); ++x) {
-			for (int y = 0; y < gameBoard.activeTetromino.blockGrid.getHeight(); ++y) {
-				if (gameBoard.activeTetromino.blockGrid.getValue(x, y)) {
-					blockSprite.setPosition((gameBoard.tetrominoPos.x + x - 1) * blockSprite.getWidth() + 800, (gameBoard.tetrominoPos.y + y - 1) * blockSprite.getHeight() + 1080-860);
+		for (int x = 0; x < tetromino.blockGrid.getWidth(); ++x) {
+			for (int y = 0; y < tetromino.blockGrid.getHeight(); ++y) {
+				if (tetromino.blockGrid.getValue(x, y)) {
+					blockSprite.setPosition((gameBoard.tetrominoPos.x + x - 1) * blockSprite.getWidth() + 800,
+							(gameBoard.tetrominoPos.y + y - 1) * blockSprite.getHeight() + 1080-860);
 					blockSprite.draw(spriteBatch);
 				}
 			}
@@ -163,7 +168,7 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 		// This is why we draw the background after the board, grid, and active tetromino
 		background.draw(spriteBatch);
 		
-		// Render Score
+		// Render score
 		quantico48.draw(spriteBatch, "SCORE:", 874, 1080-30);
 		
 		// Format the score to take 6 digits and a comma in between
@@ -175,6 +180,7 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 		scoreBuilder.append(score);
 		quantico72.draw(spriteBatch, scoreBuilder.toString(), 818, 1080-100);
 		
+		// Render particle effects
 		for (int i = effects.size - 1; i >= 0; i--) {
 		    PooledEffect effect = effects.get(i);
 		    effect.draw(spriteBatch, Gdx.graphics.getDeltaTime());
@@ -188,13 +194,33 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 		quantico42.draw(spriteBatch, "Hold", 658, 1080-154);
 		
 		if (gameBoard.heldTetromino != null) {
-			blockName = gameBoard.heldTetromino.getName();
+			tetromino = gameBoard.heldTetromino;
+			blockName = tetromino.getName();
 			blockSprite = blockSprites.get(blockName);
-			for (int x = 0; x < gameBoard.heldTetromino.blockGrid.getWidth(); ++x) {
-				for (int y = 0; y < gameBoard.heldTetromino.blockGrid.getHeight(); ++y) {
-					if (gameBoard.heldTetromino.blockGrid.getValue(x, y)) {
+			for (int x = 0; x < tetromino.blockGrid.getWidth(); ++x) {
+				for (int y = 0; y < tetromino.blockGrid.getHeight(); ++y) {
+					if (tetromino.blockGrid.getValue(x, y)) {
 						blockSprite.setPosition((x - Tetromino.origins.get(blockName).x) * blockSprite.getWidth() + 632 + tetrominoRenderOffsets.get(blockName).x,
 								(y - Tetromino.origins.get(blockName).y) * blockSprite.getHeight() + 1080-452 + tetrominoRenderOffsets.get(blockName).y);
+						blockSprite.draw(spriteBatch);
+					}
+				}
+			}
+		}
+		
+		// Render queue
+		quantico42.draw(spriteBatch,  "Queue", 1153, 1080-154);
+		
+		for (int i = 0; i < gameBoard.tetrominoQueue.size; ++i) {
+			tetromino = gameBoard.tetrominoQueue.get(i);
+			blockName = tetromino.getName();
+			blockSprite = blockSprites.get(blockName);
+			
+			for (int x = 0; x < tetromino.blockGrid.getWidth(); ++x) {
+				for (int y = 0; y < tetromino.blockGrid.getHeight(); ++y) {
+					if (tetromino.blockGrid.getValue(x, y)) {
+						blockSprite.setPosition((x - Tetromino.origins.get(blockName).x) * blockSprite.getWidth() + 1144 + tetrominoRenderOffsets.get(blockName).x,
+								(y - Tetromino.origins.get(blockName).y) * blockSprite.getHeight() + 1080-452 + tetrominoRenderOffsets.get(blockName).y - (100*i));
 						blockSprite.draw(spriteBatch);
 					}
 				}
