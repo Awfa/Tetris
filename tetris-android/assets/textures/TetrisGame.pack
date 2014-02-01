@@ -17,65 +17,72 @@ Board
   orig: 320, 640
   offset: 0, 0
   index: -1
-Ghost
+Shadow
   rotate: false
-  xy: 1923, 1759
-  size: 32, 32
-  orig: 32, 32
+  xy: 1923, 1729
+  size: 62, 62
+  orig: 62, 62
   offset: 0, 0
   index: -1
-I
+Ghost
   rotate: false
   xy: 1, 35
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
-J
+I
   rotate: false
   xy: 323, 677
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
+J
+  rotate: false
+  xy: 1923, 1695
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
 L
   rotate: false
-  xy: 1923, 1725
+  xy: 1987, 1759
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 O
   rotate: false
-  xy: 1957, 1759
+  xy: 1, 1
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 S
   rotate: false
-  xy: 1, 1
+  xy: 35, 35
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 T
   rotate: false
-  xy: 35, 35
+  xy: 323, 643
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 Z
   rotate: false
-  xy: 323, 643
+  xy: 357, 677
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 particle
   rotate: false
-  xy: 357, 693
+  xy: 1923, 1677
   size: 8, 16
   orig: 8, 16
   offset: 0, 0
