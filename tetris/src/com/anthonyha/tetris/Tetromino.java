@@ -8,7 +8,7 @@ public class Tetromino {
 	private TetrominoNames name;
 	
 	public enum TetrominoNames {
-		I, O, T, S, Z, J, L, NOTHING
+		I, O, T, S, Z, J, L, GHOST
 	}
 	
 	public static final ObjectMap<TetrominoNames, Vector2> spawnOffsets;

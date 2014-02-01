@@ -8,7 +8,7 @@ public class Block {
 	public boolean state;
 
 	public Block() {
-		name = TetrominoNames.NOTHING;
+		name = TetrominoNames.GHOST;
 		state = false;
 	}
 	

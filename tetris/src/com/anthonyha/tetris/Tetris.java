@@ -78,7 +78,7 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 		blockSprites.put(TetrominoNames.Z, gameTextures.createSprite("Z"));
 		blockSprites.put(TetrominoNames.J, gameTextures.createSprite("J"));
 		blockSprites.put(TetrominoNames.L, gameTextures.createSprite("L"));
-		
+		blockSprites.put(TetrominoNames.GHOST, gameTextures.createSprite("Ghost"));
 		// Create background and board sprites
 		background = gameTextures.createSprite("Background");
 		board = gameTextures.createSprite("Board");
@@ -152,8 +152,21 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 			}
 		}
 		
-		// Render active tetromino
+		// Render ghost piece
 		tetromino = gameBoard.activeTetromino;
+		blockName = tetromino.getName();
+		blockSprite = blockSprites.get(TetrominoNames.GHOST);
+		for (int x = 0; x < tetromino.blockGrid.getWidth(); ++x) {
+			for (int y = 0; y < tetromino.blockGrid.getHeight(); ++y) {
+				if (tetromino.blockGrid.getValue(x, y)) {
+					blockSprite.setPosition((gameBoard.getGhostVector().x + x - 1) * blockSprite.getWidth() + 800,
+							(gameBoard.getGhostVector().y + y - 1) * blockSprite.getHeight() + 1080-860);
+					blockSprite.draw(spriteBatch);
+				}
+			}
+		}
+		
+		// Render active tetromino
 		blockName = tetromino.getName();
 		blockSprite = blockSprites.get(blockName);
 		for (int x = 0; x < tetromino.blockGrid.getWidth(); ++x) {

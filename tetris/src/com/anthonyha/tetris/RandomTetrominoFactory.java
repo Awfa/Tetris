@@ -99,7 +99,7 @@ public class RandomTetrominoFactory implements TetrominoFactory {
 			grid.setValue(2, 1, true);
 			grid.setValue(2, 2, true);
 			break;
-		case NOTHING:
+		case GHOST:
 			break;
 		}
 		
@@ -115,7 +115,7 @@ public class RandomTetrominoFactory implements TetrominoFactory {
 			return new Tetromino(grid, iOffsets, tetrominoName);
 		case O:
 			return new Tetromino(grid, oOffsets, tetrominoName);
-		case NOTHING:
+		case GHOST:
 			break;
 		}
 		return null;

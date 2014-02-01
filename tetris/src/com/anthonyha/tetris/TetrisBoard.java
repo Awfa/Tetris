@@ -12,8 +12,8 @@ public class TetrisBoard {
 	private static final float LOCK_TIME = 0.5f;
 	private static final float FALL_TIME = 1f;
 	private static final float SOFT_DROP_TIME = 0.06818181818f;
-	private static final float DELAYED_AUTO_SHIFT_TIME = 0.3f;
-	private static final float AUTO_MOVEMENT_DELAY = 0.05f;
+	private static final float DELAYED_AUTO_SHIFT_TIME = 0.266666666667f;
+	private static final float AUTO_MOVEMENT_DELAY = 0.038888888889f;
 	
 	//Score multipliers for no lines cleared, single, double, triple, and quad respectively.
 	private static final int[] scoreMultipliers = {0, 100, 300, 500, 800};
@@ -225,6 +225,14 @@ public class TetrisBoard {
 	
 	public int getLevel() {
 		return level;
+	}
+	
+	public Vector2 getGhostVector() {
+		Vector2 projectedDownPos = new Vector2(tetrominoPos);
+		while(!gameGrid.intersects(activeTetromino.blockGrid, projectedDownPos.x, projectedDownPos.y-1)) {
+			--projectedDownPos.y;
+		}
+		return projectedDownPos;
 	}
 	
 	public boolean isLoss() {
