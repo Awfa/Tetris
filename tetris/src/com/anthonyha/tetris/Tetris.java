@@ -19,7 +19,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
-public class Tetris implements ApplicationListener, InputProcessor, MessageListener {
+public class Tetris extends AbstractMessageListener implements ApplicationListener, InputProcessor {
 	private static final int scale = 32;
 	
 	private OrthographicCamera camera;
@@ -64,6 +64,7 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 		
 		messageSystem = new MessageSystem();
 		messageSystem.add(this, Message.ROW_CLEARED);
+		messageSystem.add(this, Message.ROWS_SCORED);
 		
 		spriteBatch = new SpriteBatch();
 		
@@ -330,27 +331,41 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 	@Override
 	public boolean keyDown(int keycode) {
 		if (keycode == Keys.A) {
-			gameBoard.left = true;
-			gameBoard.moveLeft();
+			messageSystem.postMessage(Message.LEFT, true);
 			return true;
+			
 		} else if (keycode == Keys.D) {
-			gameBoard.right = true;
-			gameBoard.moveRight();
+			messageSystem.postMessage(Message.RIGHT, true);
 			return true;
+			
 		} else if (keycode == Keys.S) {
-			gameBoard.down = true;
+			messageSystem.postMessage(Message.SOFT_DROP, true);
+			return true;
+			
 		} else if (keycode == Keys.Q) {
-			gameBoard.rotateCounterClockwise();
+			messageSystem.postMessage(Message.ROTATE_LEFT);
+			return true;
+			
 		} else if (keycode == Keys.E) {
-			gameBoard.rotateClockwise();
+			messageSystem.postMessage(Message.ROTATE_RIGHT);
+			return true;
+			
 		} else if (keycode == Keys.W) {
-			gameBoard.hardDrop();
+			messageSystem.postMessage(Message.HARD_DROP);
+			return true;
+			
 		} else if (keycode == Keys.SHIFT_LEFT) {
-			gameBoard.holdPiece();
+			messageSystem.postMessage(Message.HOLD);
+			return true;
+			
 		} else if (keycode == Keys.ESCAPE) {
 			Gdx.graphics.setDisplayMode(1366, 768, false);
+			return true;
+			
 		} else if (keycode == Keys.BACKSPACE) {
 			Gdx.graphics.setDisplayMode(Gdx.graphics.getDesktopDisplayMode().width, Gdx.graphics.getDesktopDisplayMode().height, true);
+			return true;
+			
 		}
 
 		return false;
@@ -359,17 +374,67 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 	@Override
 	public boolean keyUp(int keycode) {
 		if (keycode == Keys.A) {
-			gameBoard.left = false;
+			messageSystem.postMessage(Message.LEFT, false);
 			return true;
+			
 		} else if (keycode == Keys.D) {
-			gameBoard.right = false;
+			messageSystem.postMessage(Message.RIGHT, false);
 			return true;
+			
 		} else if (keycode == Keys.S) {
-			gameBoard.down = false;
+			messageSystem.postMessage(Message.SOFT_DROP, false);
+			return true;
+			
 		}
+		
 		return false;
 	}
 
+	@Override
+	public void recieveMessage(MessageSystem.Message message, int extra) {
+		switch(message) {
+		case ROW_CLEARED:
+			PooledEffect effect = tetrisExplosionEffectPool.obtain();
+			effect.setPosition(800+160, 1080-860+extra*32);
+			effects.add(effect);
+			break;
+			
+		default:
+			break;
+		}
+	}
+	
+	@Override
+	public void recieveMessage(MessageSystem.Message message, MessageSystem.Extra extra) {
+		switch(message) {
+		case ROWS_SCORED:
+			switch(extra) {
+			case SINGLE_SCORED:
+				
+				break;
+			case DOUBLE_SCORED:
+				
+				break;
+			case TRIPLE_SCORED:
+				
+				break;
+			case TETRIS_SCORED:
+				
+				break;
+			case BACKTOBACK_SCORED:
+				
+				break;
+			case TSPIN_SCORED:
+				
+				break;
+			}
+			break;
+			
+		default:
+			break;
+		}
+	}
+	
 	@Override
 	public boolean keyTyped(char character) {
 		// TODO Auto-generated method stub
@@ -406,21 +471,4 @@ public class Tetris implements ApplicationListener, InputProcessor, MessageListe
 		return false;
 	}
 	
-	@Override
-	public void recieveMessage(MessageSystem.Message message) {
-		
-	}
-	
-	@Override
-	public void recieveMessage(MessageSystem.Message message, int extra) {
-		switch(message) {
-		case ROW_CLEARED:
-			PooledEffect effect = tetrisExplosionEffectPool.obtain();
-			effect.setPosition(800+160, 1080-860+extra*32);
-			effects.add(effect);
-			break;
-		default:
-			break;
-		}
-	}
 }

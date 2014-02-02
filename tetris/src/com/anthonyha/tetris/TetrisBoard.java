@@ -4,7 +4,7 @@ import com.anthonyha.tetris.MessageSystem.Message;
 import com.anthonyha.tetris.Tetromino.TetrominoNames;
 import com.badlogic.gdx.utils.Array;
 
-public class TetrisBoard {
+public class TetrisBoard extends AbstractMessageListener {
 	private static final int BOARD_WIDTH = 12;
 	private static final int BOARD_HEIGHT = 24;
 	private static final int BOARD_TOP_MARGIN = 2;
@@ -26,19 +26,26 @@ public class TetrisBoard {
 	private float moveTimer = 0f;
 
 	private boolean loss = false;
-	private boolean lineCleared;
+	
+	private boolean left, right, down, held;
 	
 	private int score = 0;
 	private int level = 1;
+	private int lastClear;
 	
 	private BlockGrid spawnField;
+	
+	public enum TetrisScores {
+		NONE, SINGLE, DOUBLE, TRIPLE, TETRIS, BACKTOBACK, TSPIN
+	}
+	
 	public BlockGrid gameGrid;
 	public Tetromino activeTetromino;
 	public Tetromino heldTetromino;
 	public Array<Tetromino> tetrominoQueue;
 
 	public Vector2 tetrominoPos;
-	public boolean left, right, down, held;
+	
 
 	public TetrisBoard(long seed, MessageSystem messageSystem) {
 		tetrominoPos = new Vector2(0, 0);
@@ -47,6 +54,14 @@ public class TetrisBoard {
 		down = false;
 
 		this.messageSystem = messageSystem;
+		
+		messageSystem.add(this, Message.LEFT);
+		messageSystem.add(this, Message.RIGHT);
+		messageSystem.add(this, Message.ROTATE_LEFT);
+		messageSystem.add(this, Message.ROTATE_RIGHT);
+		messageSystem.add(this, Message.SOFT_DROP);
+		messageSystem.add(this, Message.HARD_DROP);
+		messageSystem.add(this, Message.HOLD);
 		
 		factory = new RandomTetrominoFactory();
 		factory.setSeed(seed);
@@ -133,92 +148,6 @@ public class TetrisBoard {
 		}
 	}
 	
-	public void hardDrop() {
-		if (!loss) {
-			while(!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y-1)) {
-				--tetrominoPos.y;
-				score += 2;
-			}
-			
-			lockTetromino();
-		}
-	}
-
-	public void moveRight() {
-		if (!loss && !gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x + 1, tetrominoPos.y)) {
-			++tetrominoPos.x;
-			lockTimer = 0f;
-		}
-	}
-
-	public void moveLeft() {
-		if (!loss && !gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x - 1, tetrominoPos.y)) {
-			--tetrominoPos.x;
-			lockTimer = 0f;
-		}
-	}
-	
-	public void holdPiece() {
-		if (!loss && !held) {
-			TetrominoNames activeName = activeTetromino.getName();
-			
-			if (heldTetromino == null) {
-				spawnTetromino();
-			} else {
-				spawnTetromino(heldTetromino);
-			}
-			
-			heldTetromino = factory.getPiece(activeName);
-			held = true;
-		}
-	}
-
-	public void rotateClockwise() {
-		if (!loss) {
-			Tetromino temp = new Tetromino(activeTetromino);
-			temp.rotateClockwise();
-	
-			for (int offset = 0; offset < activeTetromino.offsetData[0].length; ++offset) {
-				// Derive kick translations from offsets
-				Vector2 offsetPreRot = new Vector2(activeTetromino.offsetData[activeTetromino.getRotationState().ordinal()][offset]);
-				Vector2 offsetPostRot = activeTetromino.offsetData[temp.getRotationState().ordinal()][offset];
-				Vector2 kickTranslation = offsetPreRot.sub(offsetPostRot);
-	
-				// If there isn't an intersection, then apply offset and be done
-				if (!gameGrid.intersects(temp.blockGrid, tetrominoPos.x + kickTranslation.x, tetrominoPos.y + kickTranslation.y)) {
-					tetrominoPos.add(kickTranslation);
-	
-					activeTetromino.rotateClockwise();
-					lockTimer = 0f;
-					break;
-				}
-			}
-		}
-	}
-
-	public void rotateCounterClockwise() {
-		if (!loss) {
-			Tetromino temp = new Tetromino(activeTetromino);
-			temp.rotateCounterClockwise();
-	
-			for (int offset = 0; offset < activeTetromino.offsetData[0].length; ++offset) {
-				// Derive kick translations from offsets
-				Vector2 offsetPreRot = new Vector2(activeTetromino.offsetData[activeTetromino.getRotationState().ordinal()][offset]);
-				Vector2 offsetPostRot = activeTetromino.offsetData[temp.getRotationState().ordinal()][offset];
-				Vector2 kickTranslation = offsetPreRot.sub(offsetPostRot);
-	
-				// If there isn't an intersection, then apply offset and be done
-				if (!gameGrid.intersects(temp.blockGrid, tetrominoPos.x + kickTranslation.x, tetrominoPos.y + kickTranslation.y)) {
-					tetrominoPos.add(kickTranslation);
-	
-					activeTetromino.rotateCounterClockwise();
-					lockTimer = 0f;
-					break;
-				}
-			}
-		}
-	}
-
 	public int getScore() {
 		return score;
 	}
@@ -239,6 +168,143 @@ public class TetrisBoard {
 		return loss;
 	}
 	
+	public int getLinesCleared() {
+		return lastClear;
+	}
+	
+	@Override
+	public void recieveMessage(Message message) {
+		if (!loss) {
+			switch(message) {
+			case HARD_DROP:
+				hardDrop();
+				break;
+				
+			case ROTATE_RIGHT:
+				rotateClockwise();
+				break;
+				
+			case ROTATE_LEFT:
+				rotateCounterClockwise();
+				break;
+				
+			case HOLD:
+				holdPiece();
+				break;
+				
+			default:
+				break;
+			}
+		}
+	}
+
+	@Override
+	public void recieveMessage(Message message, boolean extra) {
+		if (!loss) {
+			switch(message) {
+			case LEFT:
+				if (extra) {
+					moveLeft();
+				} 
+				left = extra;
+				break;
+				
+			case RIGHT:
+				if (extra) {
+					moveRight();
+				}
+				right = extra;
+				break;
+				
+			case SOFT_DROP:
+				down = extra;
+				
+			default:
+				break;
+			}
+		}
+	}
+	
+	private void hardDrop() {
+		while(!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y-1)) {
+			--tetrominoPos.y;
+			score += 2;
+		}
+		
+		lockTetromino();
+	}
+
+	private void moveRight() {
+		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x + 1, tetrominoPos.y)) {
+			++tetrominoPos.x;
+			lockTimer = 0f;
+		}
+	}
+
+	private void moveLeft() {
+		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x - 1, tetrominoPos.y)) {
+			--tetrominoPos.x;
+			lockTimer = 0f;
+		}
+	}
+	
+	private void holdPiece() {
+		if (!held) {
+			TetrominoNames activeName = activeTetromino.getName();
+			
+			if (heldTetromino == null) {
+				spawnTetromino();
+			} else {
+				spawnTetromino(heldTetromino);
+			}
+			
+			heldTetromino = factory.getPiece(activeName);
+			held = true;
+		}
+	}
+
+	private void rotateClockwise() {
+		Tetromino temp = new Tetromino(activeTetromino);
+		temp.rotateClockwise();
+
+		for (int offset = 0; offset < activeTetromino.offsetData[0].length; ++offset) {
+			// Derive kick translations from offsets
+			Vector2 offsetPreRot = new Vector2(activeTetromino.offsetData[activeTetromino.getRotationState().ordinal()][offset]);
+			Vector2 offsetPostRot = activeTetromino.offsetData[temp.getRotationState().ordinal()][offset];
+			Vector2 kickTranslation = offsetPreRot.sub(offsetPostRot);
+
+			// If there isn't an intersection, then apply offset and be done
+			if (!gameGrid.intersects(temp.blockGrid, tetrominoPos.x + kickTranslation.x, tetrominoPos.y + kickTranslation.y)) {
+				tetrominoPos.add(kickTranslation);
+
+				activeTetromino.rotateClockwise();
+				lockTimer = 0f;
+				break;
+			}
+		}
+	}
+
+	private void rotateCounterClockwise() {
+		Tetromino temp = new Tetromino(activeTetromino);
+		temp.rotateCounterClockwise();
+
+		for (int offset = 0; offset < activeTetromino.offsetData[0].length; ++offset) {
+			// Derive kick translations from offsets
+			Vector2 offsetPreRot = new Vector2(activeTetromino.offsetData[activeTetromino.getRotationState().ordinal()][offset]);
+			Vector2 offsetPostRot = activeTetromino.offsetData[temp.getRotationState().ordinal()][offset];
+			Vector2 kickTranslation = offsetPreRot.sub(offsetPostRot);
+
+			// If there isn't an intersection, then apply offset and be done
+			if (!gameGrid.intersects(temp.blockGrid, tetrominoPos.x + kickTranslation.x, tetrominoPos.y + kickTranslation.y)) {
+				tetrominoPos.add(kickTranslation);
+
+				activeTetromino.rotateCounterClockwise();
+				lockTimer = 0f;
+				break;
+			}
+		}
+	}
+	
 	private boolean lockTetromino() {
 		// Check for loss conditions
 		if (gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y) ||
@@ -255,42 +321,8 @@ public class TetrisBoard {
 					}
 				}
 			}
-	
-			// Process for line clears
-			int lines = 0;
-			for (int y = 1; y < BOARD_HEIGHT - 1; ++y) { // From the bottom of the board, to the top.
-				int blocksInALine = 0; // Keep track of blocks in a line to see if a line is full
-				for (int x = 1; x < BOARD_WIDTH - 1; ++x) {
-					if (gameGrid.getValue(x, y)) {
-						++blocksInALine;
-					} else {
-						break; // No need to check if there is a single hole
-					}
-				}
-	
-				if (blocksInALine == BOARD_WIDTH - 2) {
-					clearLine(y);
-					messageSystem.postMessage(Message.ROW_CLEARED, y+lines-1);
-					++lines;
-					--y; // Decrement y so that it will check again
-				}
-			}
 			
-			// Process score normally, or back-to-back circumstances
-			if (lineCleared) {
-				score += scoreMultipliers[lines] * level * 1.5f;
-			} else {
-				score += scoreMultipliers[lines] * level;
-			}
-			
-			// Set lineCleared flag correspondingly
-			if (lines > 0) {
-				lineCleared = true;
-			} else {
-				lineCleared = false;
-			}
-			
-			// Spawn new piece
+			clearFullLines();
 			spawnTetromino();
 			
 			// Make it able for players to hold the piece again
@@ -313,6 +345,57 @@ public class TetrisBoard {
 		tetrominoPos.add(Tetromino.spawnOffsets.get(activeTetromino.getName()));
 		
 		moveTimer = 0f;
+	}
+	
+	private int clearFullLines() {
+		int lines = 0;
+		for (int y = 1; y < BOARD_HEIGHT - 1; ++y) { // From the bottom of the board, to the top.
+			int blocksInALine = 0; // Keep track of blocks in a line to see if a line is full
+			for (int x = 1; x < BOARD_WIDTH - 1; ++x) {
+				if (gameGrid.getValue(x, y)) {
+					++blocksInALine;
+				} else {
+					break; // No need to check if there is a single hole
+				}
+			}
+
+			if (blocksInALine == BOARD_WIDTH - 2) {
+				clearLine(y);
+				messageSystem.postMessage(Message.ROW_CLEARED, y+lines-1);
+				++lines;
+				--y; // Decrement y so that it will check again
+			}
+		}
+		
+		if (lines == 4 && lastClear == 4) {
+			score += scoreMultipliers[lines] * level * 1.5f;
+			messageSystem.postMessage(MessageSystem.Message.ROWS_SCORED, MessageSystem.Extra.BACKTOBACK_SCORED);
+			lastClear = lines;
+		} else if (lines > 0) {
+			score += scoreMultipliers[lines] * level;
+			lastClear = lines;
+			
+			switch (lines) {
+			case 1:
+				messageSystem.postMessage(MessageSystem.Message.ROWS_SCORED, MessageSystem.Extra.SINGLE_SCORED);
+				break;
+				
+			case 2:
+				messageSystem.postMessage(MessageSystem.Message.ROWS_SCORED, MessageSystem.Extra.DOUBLE_SCORED);
+				break;
+				
+			case 3:
+				messageSystem.postMessage(MessageSystem.Message.ROWS_SCORED, MessageSystem.Extra.TRIPLE_SCORED);
+				break;
+				
+			case 4:
+				messageSystem.postMessage(MessageSystem.Message.ROWS_SCORED, MessageSystem.Extra.TETRIS_SCORED);
+				break;
+				
+			}
+		}
+		
+		return lines;
 	}
 
 	private void clearLine(int y) {

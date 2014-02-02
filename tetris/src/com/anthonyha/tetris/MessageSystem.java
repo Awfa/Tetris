@@ -6,7 +6,12 @@ import com.badlogic.gdx.utils.ObjectMap;
 public class MessageSystem {
 	
 	public enum Message {
-		ROW_CLEARED, HARD_DROPPED, SOFT_DROPPED, LOCKED_IN, LEVEL_UP, GAME_OVER
+		SCORE_CHANGE, ROWS_SCORED, ROW_CLEARED, HARD_DROPPED, SOFT_DROPPED, LOCKED_IN, LEVEL_UP, GAME_OVER, // Game state changes
+		LEFT, RIGHT, ROTATE_LEFT, ROTATE_RIGHT, SOFT_DROP, HARD_DROP, HOLD // Command changes
+	}
+	
+	public enum Extra {
+		SINGLE_SCORED, DOUBLE_SCORED, TRIPLE_SCORED, TETRIS_SCORED, BACKTOBACK_SCORED, TSPIN_SCORED
 	}
 	
 	private ObjectMap<Message, Array<MessageListener>> listenerMap;
@@ -42,4 +47,17 @@ public class MessageSystem {
 		}
 	}
 	
+	public void postMessage(Message m, boolean extra) {
+		Array<MessageListener> listeners = listenerMap.get(m);
+		for (MessageListener listener : listeners) {
+			listener.recieveMessage(m, extra);
+		}
+	}
+	
+	public void postMessage(Message m, Extra extra) {
+		Array<MessageListener> listeners = listenerMap.get(m);
+		for (MessageListener listener : listeners) {
+			listener.recieveMessage(m, extra);
+		}
+	}
 }
