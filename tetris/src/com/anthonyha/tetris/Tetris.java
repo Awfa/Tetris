@@ -6,6 +6,7 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -55,7 +56,7 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 	ParticleEffectPool tetrisExplosionEffectPool;
 	Array<PooledEffect> effects;
 	
-	
+	Sound shiftSound, hardDropSound;
 	
 	@Override
 	public void create() {
@@ -63,6 +64,9 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		float h = 1080f;
 		
 		messageSystem = new MessageSystem();
+		messageSystem.add(this, Message.SOFT_DROPPED);
+		messageSystem.add(this, Message.HARD_DROPPED);
+		messageSystem.add(this, Message.SHIFTED);
 		messageSystem.add(this, Message.ROW_CLEARED);
 		messageSystem.add(this, Message.ROWS_SCORED);
 		
@@ -109,6 +113,10 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		tetrisExplosionEffect.load(Gdx.files.internal("effects/BlockExplosion.p"), gameTextures);
 		tetrisExplosionEffectPool = new ParticleEffectPool(tetrisExplosionEffect, 1, 2);
 		effects = new Array<PooledEffect>();
+		
+		// Load sfx
+		shiftSound = Gdx.audio.newSound(Gdx.files.internal("sfx/shiftSound.wav"));
+		hardDropSound = Gdx.audio.newSound(Gdx.files.internal("sfx/hardDropSound.wav"));
 		
 		Gdx.input.setInputProcessor(this);
 		
@@ -388,6 +396,23 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		}
 		
 		return false;
+	}
+	
+	@Override
+	public void recieveMessage(MessageSystem.Message message) {
+		switch(message) {
+		case SOFT_DROPPED:
+		case SHIFTED:
+			shiftSound.play(1.0f);
+			break;
+			
+		case HARD_DROPPED:
+			hardDropSound.play(1.0f);
+			break;
+			
+		default:
+			break;
+		}
 	}
 
 	@Override

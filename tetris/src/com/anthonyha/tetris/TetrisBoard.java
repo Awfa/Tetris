@@ -138,6 +138,8 @@ public class TetrisBoard extends AbstractMessageListener {
 				while (fallTimer >= SOFT_DROP_TIME) {
 					fallTimer -= SOFT_DROP_TIME;
 				}
+				
+				messageSystem.postMessage(MessageSystem.Message.SOFT_DROPPED);
 			} else if (fallTimer >= FALL_TIME) {
 				if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y - 1)) {
 					--tetrominoPos.y;
@@ -229,6 +231,8 @@ public class TetrisBoard extends AbstractMessageListener {
 		while(!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y-1)) {
 			--tetrominoPos.y;
 			score += 2;
+			
+			messageSystem.postMessage(MessageSystem.Message.HARD_DROPPED);
 		}
 		
 		lockTetromino();
@@ -238,6 +242,8 @@ public class TetrisBoard extends AbstractMessageListener {
 		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x + 1, tetrominoPos.y)) {
 			++tetrominoPos.x;
 			lockTimer = 0f;
+			
+			messageSystem.postMessage(MessageSystem.Message.SHIFTED);
 		}
 	}
 
@@ -245,6 +251,8 @@ public class TetrisBoard extends AbstractMessageListener {
 		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x - 1, tetrominoPos.y)) {
 			--tetrominoPos.x;
 			lockTimer = 0f;
+			
+			messageSystem.postMessage(MessageSystem.Message.SHIFTED);
 		}
 	}
 	
@@ -310,6 +318,8 @@ public class TetrisBoard extends AbstractMessageListener {
 		if (gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y) ||
 				spawnField.intersects(activeTetromino.blockGrid, tetrominoPos.x-1, tetrominoPos.y + BOARD_HEIGHT - 2 - BOARD_TOP_MARGIN) ) {
 			loss = true;
+			
+			messageSystem.postMessage(MessageSystem.Message.GAME_OVER);
 			return false;
 		} else {
 			// Check if the piece is above the visible portion of the playing field
