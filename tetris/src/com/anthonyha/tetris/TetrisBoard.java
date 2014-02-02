@@ -132,6 +132,8 @@ public class TetrisBoard extends AbstractMessageListener {
 				if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y - 1)) {
 					--tetrominoPos.y;
 					score += 1;
+					
+					messageSystem.postMessage(MessageSystem.Message.SOFT_DROPPED);
 				}
 				
 				// Consume rest of extra time
