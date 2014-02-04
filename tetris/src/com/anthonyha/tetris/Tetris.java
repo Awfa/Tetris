@@ -4,8 +4,6 @@ import com.anthonyha.tetris.MessageSystem.Message;
 import com.anthonyha.tetris.Tetromino.TetrominoNames;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -20,7 +18,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
-public class Tetris extends AbstractMessageListener implements ApplicationListener, InputProcessor {
+public class Tetris extends AbstractMessageListener implements ApplicationListener {
 	private static final int scale = 32;
 	
 	private OrthographicCamera camera;
@@ -51,12 +49,12 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 	}
 	
 	private TetrisBoard gameBoard;
+	
 	private MessageSystem messageSystem;
+	private TetrisSoundSystem tetrisSoundSystem;
 	
 	ParticleEffectPool tetrisExplosionEffectPool;
 	Array<PooledEffect> effects;
-	
-	Sound shiftSound, hardDropSound;
 	
 	@Override
 	public void create() {
@@ -114,12 +112,9 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		tetrisExplosionEffectPool = new ParticleEffectPool(tetrisExplosionEffect, 1, 2);
 		effects = new Array<PooledEffect>();
 		
-		// Load sfx
-		shiftSound = Gdx.audio.newSound(Gdx.files.internal("sfx/shiftSound.wav"));
-		hardDropSound = Gdx.audio.newSound(Gdx.files.internal("sfx/hardDropSound.wav"));
-		
-		Gdx.input.setInputProcessor(this);
-		
+		tetrisSoundSystem = new TetrisSoundSystem(messageSystem);
+		tetrisSoundSystem.setSfxVolume(-1.0f);
+		Gdx.input.setInputProcessor(new TetrisInputSystem(messageSystem));
 	}
 
 	@Override
@@ -130,6 +125,7 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		quantico72.dispose();
 		
 		gameTextures.dispose();
+		tetrisSoundSystem.dispose();
 	}
 
 	@Override
@@ -335,86 +331,6 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 	public void resume() {
 	}
 
-	// Input Processing
-	@Override
-	public boolean keyDown(int keycode) {
-		if (keycode == Keys.A) {
-			messageSystem.postMessage(Message.LEFT, true);
-			return true;
-			
-		} else if (keycode == Keys.D) {
-			messageSystem.postMessage(Message.RIGHT, true);
-			return true;
-			
-		} else if (keycode == Keys.S) {
-			messageSystem.postMessage(Message.SOFT_DROP, true);
-			return true;
-			
-		} else if (keycode == Keys.Q) {
-			messageSystem.postMessage(Message.ROTATE_LEFT);
-			return true;
-			
-		} else if (keycode == Keys.E) {
-			messageSystem.postMessage(Message.ROTATE_RIGHT);
-			return true;
-			
-		} else if (keycode == Keys.W) {
-			messageSystem.postMessage(Message.HARD_DROP);
-			return true;
-			
-		} else if (keycode == Keys.SHIFT_LEFT) {
-			messageSystem.postMessage(Message.HOLD);
-			return true;
-			
-		} else if (keycode == Keys.ESCAPE) {
-			Gdx.graphics.setDisplayMode(1366, 768, false);
-			return true;
-			
-		} else if (keycode == Keys.BACKSPACE) {
-			Gdx.graphics.setDisplayMode(Gdx.graphics.getDesktopDisplayMode().width, Gdx.graphics.getDesktopDisplayMode().height, true);
-			return true;
-			
-		}
-
-		return false;
-	}
-
-	@Override
-	public boolean keyUp(int keycode) {
-		if (keycode == Keys.A) {
-			messageSystem.postMessage(Message.LEFT, false);
-			return true;
-			
-		} else if (keycode == Keys.D) {
-			messageSystem.postMessage(Message.RIGHT, false);
-			return true;
-			
-		} else if (keycode == Keys.S) {
-			messageSystem.postMessage(Message.SOFT_DROP, false);
-			return true;
-			
-		}
-		
-		return false;
-	}
-	
-	@Override
-	public void recieveMessage(MessageSystem.Message message) {
-		switch(message) {
-		case SOFT_DROPPED:
-		case SHIFTED:
-			shiftSound.play(1.0f);
-			break;
-			
-		case HARD_DROPPED:
-			hardDropSound.play(1.0f);
-			break;
-			
-		default:
-			break;
-		}
-	}
-
 	@Override
 	public void recieveMessage(MessageSystem.Message message, int extra) {
 		switch(message) {
@@ -458,42 +374,6 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		default:
 			break;
 		}
-	}
-	
-	@Override
-	public boolean keyTyped(char character) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean mouseMoved(int screenX, int screenY) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean scrolled(int amount) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 	
 }
