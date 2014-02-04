@@ -35,6 +35,7 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 	private Sprite board;
 	private Sprite dropShadow;
 	private ObjectMap<TetrominoNames, Sprite> blockSprites;
+	private ObjectMap<TetrominoNames, Sprite> queueOverlaySprites;
 	
 	private static final ObjectMap<TetrominoNames, Vector2> tetrominoRenderOffsets;
 	static {
@@ -47,6 +48,8 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		tetrominoRenderOffsets.put(TetrominoNames.J, new Vector2(24, 84));
 		tetrominoRenderOffsets.put(TetrominoNames.L, new Vector2(24, 84));
 	}
+	
+	private static final int[] queueYOffsets = { 0, 228, 372 };
 	
 	private TetrisBoard gameBoard;
 	
@@ -83,6 +86,20 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		blockSprites.put(TetrominoNames.J, gameTextures.createSprite("J"));
 		blockSprites.put(TetrominoNames.L, gameTextures.createSprite("L"));
 		blockSprites.put(TetrominoNames.GHOST, gameTextures.createSprite("Ghost"));
+		
+		queueOverlaySprites = new ObjectMap<TetrominoNames, Sprite>();
+		queueOverlaySprites.put(TetrominoNames.I, gameTextures.createSprite("IOverlay"));
+		queueOverlaySprites.put(TetrominoNames.O, gameTextures.createSprite("OOverlay"));
+		queueOverlaySprites.put(TetrominoNames.T, gameTextures.createSprite("TOverlay"));
+		queueOverlaySprites.put(TetrominoNames.S, gameTextures.createSprite("SOverlay"));
+		queueOverlaySprites.put(TetrominoNames.Z, gameTextures.createSprite("ZOverlay"));
+		queueOverlaySprites.put(TetrominoNames.J, gameTextures.createSprite("JOverlay"));
+		queueOverlaySprites.put(TetrominoNames.L, gameTextures.createSprite("LOverlay"));
+		
+		for (Sprite overlay : queueOverlaySprites.values()) {
+			overlay.setPosition(1136, 1080-460);
+		}
+		
 		dropShadow = gameTextures.createSprite("Shadow");
 		
 		// Create background and board sprites
@@ -271,7 +288,7 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		
 		// Render queue
 		quantico42.draw(spriteBatch,  "Queue", 1153, 1080-154);
-		
+		queueOverlaySprites.get(gameBoard.tetrominoQueue.get(0).getName()).draw(spriteBatch);
 		// Render shadows
 		for (int i = 0; i < gameBoard.tetrominoQueue.size; ++i) {
 			tetromino = gameBoard.tetrominoQueue.get(i);
@@ -282,7 +299,7 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 				for (int y = 0; y < tetromino.blockGrid.getHeight(); ++y) {
 					if (tetromino.blockGrid.getValue(x, y)) {
 						dropShadow.setPosition((x - Tetromino.origins.get(blockName).x) * scale + 1144 + tetrominoRenderOffsets.get(blockName).x - 15,
-								(y - Tetromino.origins.get(blockName).y) * scale + 1080-452 + tetrominoRenderOffsets.get(blockName).y - (100*i) - 15);
+								(y - Tetromino.origins.get(blockName).y) * scale + 1080-452 + tetrominoRenderOffsets.get(blockName).y - queueYOffsets[i] - 15);
 						dropShadow.draw(spriteBatch);
 					}
 				}
@@ -299,7 +316,7 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 				for (int y = 0; y < tetromino.blockGrid.getHeight(); ++y) {
 					if (tetromino.blockGrid.getValue(x, y)) {
 						blockSprite.setPosition((x - Tetromino.origins.get(blockName).x) * scale + 1144 + tetrominoRenderOffsets.get(blockName).x,
-								(y - Tetromino.origins.get(blockName).y) * scale + 1080-452 + tetrominoRenderOffsets.get(blockName).y - (100*i));
+								(y - Tetromino.origins.get(blockName).y) * scale + 1080-452 + tetrominoRenderOffsets.get(blockName).y - queueYOffsets[i]);
 						blockSprite.draw(spriteBatch);
 					}
 				}
@@ -316,6 +333,17 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		
 		quantico42.draw(spriteBatch, "Level", 654, 1080-506);
 		quantico64.draw(spriteBatch, stringBuilder.toString(), 665,1080-598);
+		
+		// Render goal
+		String goal = String.valueOf(gameBoard.getGoal());
+		stringBuilder.delete(0, stringBuilder.length());
+		for (int i = 0; i < 2 - goal.length(); ++i) {
+			stringBuilder.append(0);
+		}
+		stringBuilder.append(goal);
+		quantico42.draw(spriteBatch, "Goal", 658, 1080-720);
+		quantico64.draw(spriteBatch, stringBuilder.toString(), 660,1080-814);
+		
 		spriteBatch.end();
 	}
 	

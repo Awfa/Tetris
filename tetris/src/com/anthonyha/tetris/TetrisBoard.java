@@ -31,7 +31,8 @@ public class TetrisBoard extends AbstractMessageListener {
 	
 	private int score = 0;
 	private int level = 1;
-	private int lastClear;
+	private int goal;
+	private int lastClear = 0;
 	
 	private BlockGrid spawnField;
 	
@@ -52,6 +53,7 @@ public class TetrisBoard extends AbstractMessageListener {
 		left = false;
 		right = false;
 		down = false;
+		goal = level * 5;
 
 		this.messageSystem = messageSystem;
 		
@@ -158,6 +160,10 @@ public class TetrisBoard extends AbstractMessageListener {
 	
 	public int getLevel() {
 		return level;
+	}
+	
+	public int getGoal() {
+		return goal;
 	}
 	
 	public Vector2 getGhostVector() {
@@ -383,6 +389,8 @@ public class TetrisBoard extends AbstractMessageListener {
 			score += scoreMultipliers[lines] * level * 1.5f;
 			messageSystem.postMessage(MessageSystem.Message.ROWS_SCORED, MessageSystem.Extra.BACKTOBACK_SCORED);
 			lastClear = lines;
+			
+			goal -= 12;
 		} else if (lines > 0) {
 			score += scoreMultipliers[lines] * level;
 			lastClear = lines;
@@ -390,21 +398,32 @@ public class TetrisBoard extends AbstractMessageListener {
 			switch (lines) {
 			case 1:
 				messageSystem.postMessage(MessageSystem.Message.ROWS_SCORED, MessageSystem.Extra.SINGLE_SCORED);
+				goal -= 1;
 				break;
 				
 			case 2:
 				messageSystem.postMessage(MessageSystem.Message.ROWS_SCORED, MessageSystem.Extra.DOUBLE_SCORED);
+				goal -= 3;
 				break;
 				
 			case 3:
 				messageSystem.postMessage(MessageSystem.Message.ROWS_SCORED, MessageSystem.Extra.TRIPLE_SCORED);
+				goal -= 5;
 				break;
 				
 			case 4:
 				messageSystem.postMessage(MessageSystem.Message.ROWS_SCORED, MessageSystem.Extra.TETRIS_SCORED);
+				goal -= 8;
 				break;
 				
 			}
+		}
+		
+		if (goal <= 0) {
+			++level;
+			goal = level * 5;
+			
+			messageSystem.postMessage(Message.LEVEL_UP);
 		}
 		
 		return lines;
