@@ -130,27 +130,27 @@ public class TetrisBoard extends AbstractMessageListener {
 			}
 			
 			// Make the piece fall
-			if (down && fallTimer >= SOFT_DROP_TIME) {
-				if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y - 1)) {
-					--tetrominoPos.y;
-					score += 1;
-					
-					messageSystem.postMessage(MessageSystem.Message.SOFT_DROPPED);
-				}
-				
-				// Consume rest of extra time
+			if (down) {
 				while (fallTimer >= SOFT_DROP_TIME) {
+					if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y - 1)) {
+						--tetrominoPos.y;
+						score += 1;
+						
+						messageSystem.postMessage(MessageSystem.Message.SOFT_DROPPED);
+					}
 					fallTimer -= SOFT_DROP_TIME;
+					
 				}
-				
-				messageSystem.postMessage(MessageSystem.Message.SOFT_DROPPED);
-			} else if (fallTimer >= FALL_TIME) {
-				if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y - 1)) {
-					--tetrominoPos.y;
+			} else {
+				while (fallTimer >= FALL_TIME) {
+					if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y - 1)) {
+						--tetrominoPos.y;
+					}
+					fallTimer -= FALL_TIME;
+					
 				}
-	
-				fallTimer -= FALL_TIME;
 			}
+			
 		}
 	}
 	
@@ -228,6 +228,7 @@ public class TetrisBoard extends AbstractMessageListener {
 				
 			case SOFT_DROP:
 				down = extra;
+				fallTimer = 0;
 				
 			default:
 				break;
