@@ -107,7 +107,7 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		board = gameTextures.createSprite("Board");
 		
 		// Create game model
-		gameBoard = new TetrisBoard(scale, messageSystem);
+		gameBoard = new TetrisBoard(13, 1, messageSystem);
 
 		// Create camera and center it
 		camera = new OrthographicCamera();
@@ -130,7 +130,7 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		effects = new Array<PooledEffect>();
 		
 		tetrisSoundSystem = new TetrisSoundSystem(messageSystem);
-		tetrisSoundSystem.setSfxVolume(-1.0f);
+		tetrisSoundSystem.setSfxVolume(0.1f);
 		Gdx.input.setInputProcessor(new TetrisInputSystem(messageSystem));
 	}
 

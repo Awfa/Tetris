@@ -9,11 +9,6 @@ public class TetrisBoard extends AbstractMessageListener {
 	private static final int BOARD_HEIGHT = 24;
 	private static final int BOARD_TOP_MARGIN = 2;
 	private static final int QUEUE_LENGTH = 3;
-	private static final float LOCK_TIME = 0.5f;
-	private static final float FALL_TIME = 1f;
-	private static final float SOFT_DROP_TIME = 0.06818181818f;
-	private static final float DELAYED_AUTO_SHIFT_TIME = 0.266666666667f;
-	private static final float AUTO_MOVEMENT_DELAY = 0.038888888889f;
 	
 	//Score multipliers for no lines cleared, single, double, triple, and quad respectively.
 	private static final int[] scoreMultipliers = {0, 100, 300, 500, 800};
@@ -34,6 +29,12 @@ public class TetrisBoard extends AbstractMessageListener {
 	private int goal;
 	private int lastClear = 0;
 	
+	private float softDropTime = 0.06818181818f;
+	private float fallTime = 1f;
+	private float lockTime = 0.5f;
+	private float dasTime = 0.2666666f;
+	private float amTime = 0.0388888f;
+	
 	private BlockGrid spawnField;
 	
 	public enum TetrisScores {
@@ -48,12 +49,17 @@ public class TetrisBoard extends AbstractMessageListener {
 	public Vector2 tetrominoPos;
 	
 
-	public TetrisBoard(long seed, MessageSystem messageSystem) {
+	public TetrisBoard(long seed, int l, MessageSystem messageSystem) {
 		tetrominoPos = new Vector2(0, 0);
 		left = false;
 		right = false;
 		down = false;
+		
+		level = l;
 		goal = level * 5;
+		fallTime = (float) (1/(Math.pow(1.3, level-1)));
+		softDropTime = (float) (0.068/Math.pow(1.15, level-1));
+		lockTime = fallTime/2;
 
 		this.messageSystem = messageSystem;
 		
@@ -100,13 +106,13 @@ public class TetrisBoard extends AbstractMessageListener {
 	public void update(float deltaTime) {
 		if (!loss) {
 			// Process DAS movement
-			if (moveTimer >= DELAYED_AUTO_SHIFT_TIME) {
+			if (moveTimer >= dasTime) {
 				if (left) {
 					moveLeft();
 				} else if (right) {
 					moveRight();
 				}
-				moveTimer -= AUTO_MOVEMENT_DELAY;
+				moveTimer -= amTime;
 			} else if (left ^ right) {
 				moveTimer += deltaTime;
 			} else {
@@ -121,9 +127,9 @@ public class TetrisBoard extends AbstractMessageListener {
 			}
 	
 			// If lock time has been exceeded, lock and spawn a new tetromino
-			if (lockTimer >= LOCK_TIME) {
+			if (lockTimer >= lockTime) {
 				if (lockTetromino()) {
-					lockTimer -= LOCK_TIME;
+					lockTimer -= lockTime;
 				}
 			} else {
 				fallTimer += deltaTime;
@@ -131,22 +137,22 @@ public class TetrisBoard extends AbstractMessageListener {
 			
 			// Make the piece fall
 			if (down) {
-				while (fallTimer >= SOFT_DROP_TIME) {
+				while (fallTimer >= softDropTime) {
 					if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y - 1)) {
 						--tetrominoPos.y;
 						score += 1;
 						
 						messageSystem.postMessage(MessageSystem.Message.SOFT_DROPPED);
 					}
-					fallTimer -= SOFT_DROP_TIME;
+					fallTimer -= softDropTime;
 					
 				}
 			} else {
-				while (fallTimer >= FALL_TIME) {
+				while (fallTimer >= fallTime) {
 					if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y - 1)) {
 						--tetrominoPos.y;
 					}
-					fallTimer -= FALL_TIME;
+					fallTimer -= fallTime;
 					
 				}
 			}
@@ -240,10 +246,9 @@ public class TetrisBoard extends AbstractMessageListener {
 		while(!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y-1)) {
 			--tetrominoPos.y;
 			score += 2;
-			
-			messageSystem.postMessage(MessageSystem.Message.HARD_DROPPED);
 		}
 		
+		messageSystem.postMessage(MessageSystem.Message.HARD_DROPPED);
 		lockTetromino();
 	}
 
@@ -421,8 +426,7 @@ public class TetrisBoard extends AbstractMessageListener {
 		}
 		
 		if (goal <= 0) {
-			++level;
-			goal = level * 5;
+			incrementLevel();
 			
 			messageSystem.postMessage(Message.LEVEL_UP);
 		}
@@ -436,6 +440,15 @@ public class TetrisBoard extends AbstractMessageListener {
 				gameGrid.setBlock(x, y, gameGrid.getBlock(x, y + 1));
 			}
 		}
+	}
+	
+	private void incrementLevel() {
+		++level;
+		
+		goal = level * 5;
+		fallTime = (float) (1/(Math.pow(1.3, level-1)));
+		softDropTime = (float) (0.068/Math.pow(1.15, level-1));
+		lockTime = fallTime/2;
 	}
 	
 }
