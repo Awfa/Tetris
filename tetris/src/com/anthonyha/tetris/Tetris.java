@@ -95,9 +95,10 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		queueOverlaySprites.put(TetrominoNames.Z, gameTextures.createSprite("ZOverlay"));
 		queueOverlaySprites.put(TetrominoNames.J, gameTextures.createSprite("JOverlay"));
 		queueOverlaySprites.put(TetrominoNames.L, gameTextures.createSprite("LOverlay"));
+		queueOverlaySprites.put(TetrominoNames.GHOST, gameTextures.createSprite("GhostOverlay"));
 		
 		for (Sprite overlay : queueOverlaySprites.values()) {
-			overlay.setPosition(1136, 1080-460);
+			overlay.setPosition(1136, 1080-468);
 		}
 		
 		dropShadow = gameTextures.createSprite("Shadow");
@@ -130,7 +131,7 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		effects = new Array<PooledEffect>();
 		
 		tetrisSoundSystem = new TetrisSoundSystem(messageSystem);
-		tetrisSoundSystem.setSfxVolume(0.1f);
+		tetrisSoundSystem.setSfxVolume(0.5f);
 		Gdx.input.setInputProcessor(new TetrisInputSystem(messageSystem));
 	}
 
@@ -150,6 +151,7 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		Tetromino tetromino;
 		TetrominoNames blockName;
 		Sprite blockSprite;
+		Sprite overlaySprite = queueOverlaySprites.get(gameBoard.tetrominoQueue.get(0).getName());
 		
 		StringBuilder stringBuilder = new StringBuilder();
 		
@@ -259,6 +261,10 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 			blockName = tetromino.getName();
 			blockSprite = blockSprites.get(blockName);
 			
+			overlaySprite = queueOverlaySprites.get(blockName);
+			overlaySprite.setPosition(624, 1080-452);
+			overlaySprite.draw(spriteBatch);
+			
 			// Render shadow
 			for (int x = 0; x < tetromino.blockGrid.getWidth(); ++x) {
 				for (int y = 0; y < tetromino.blockGrid.getHeight(); ++y) {
@@ -284,11 +290,19 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 					}
 				}
 			}
+		} else {
+			overlaySprite = queueOverlaySprites.get(TetrominoNames.GHOST);
+			overlaySprite.setPosition(624, 1080-452);
+			overlaySprite.draw(spriteBatch);
 		}
+		
 		
 		// Render queue
 		quantico42.draw(spriteBatch,  "Queue", 1153, 1080-154);
-		queueOverlaySprites.get(gameBoard.tetrominoQueue.get(0).getName()).draw(spriteBatch);
+		
+		overlaySprite = queueOverlaySprites.get(gameBoard.tetrominoQueue.get(0).getName());
+		overlaySprite.setPosition(1136, 1080-452);
+		overlaySprite.draw(spriteBatch);
 		// Render shadows
 		for (int i = 0; i < gameBoard.tetrominoQueue.size; ++i) {
 			tetromino = gameBoard.tetrominoQueue.get(i);

@@ -5,70 +5,77 @@ filter: Nearest,Nearest
 repeat: none
 Background
   rotate: false
-  xy: 1, 953
+  xy: 1, 945
   size: 1920, 1080
   orig: 1920, 1080
   offset: 0, 0
   index: -1
 Board
   rotate: false
-  xy: 1, 311
+  xy: 1, 303
   size: 320, 640
   orig: 320, 640
   offset: 0, 0
   index: -1
-IOverlay
+GhostOverlay
   rotate: false
   xy: 1, 69
-  size: 160, 240
-  orig: 160, 240
+  size: 160, 232
+  orig: 160, 232
+  offset: 0, 0
+  index: -1
+IOverlay
+  rotate: false
+  xy: 323, 711
+  size: 160, 232
+  orig: 160, 232
   offset: 0, 0
   index: -1
 JOverlay
   rotate: false
-  xy: 323, 711
-  size: 160, 240
-  orig: 160, 240
+  xy: 323, 477
+  size: 160, 232
+  orig: 160, 232
   offset: 0, 0
   index: -1
 LOverlay
   rotate: false
-  xy: 323, 469
-  size: 160, 240
-  orig: 160, 240
+  xy: 485, 711
+  size: 160, 232
+  orig: 160, 232
   offset: 0, 0
   index: -1
 OOverlay
   rotate: false
-  xy: 485, 711
-  size: 160, 240
-  orig: 160, 240
+  xy: 485, 477
+  size: 160, 232
+  orig: 160, 232
   offset: 0, 0
   index: -1
 SOverlay
   rotate: false
-  xy: 485, 469
-  size: 160, 240
-  orig: 160, 240
+  xy: 647, 711
+  size: 160, 232
+  orig: 160, 232
   offset: 0, 0
   index: -1
 TOverlay
   rotate: false
-  xy: 647, 711
-  size: 160, 240
-  orig: 160, 240
+  xy: 647, 477
+  size: 160, 232
+  orig: 160, 232
   offset: 0, 0
   index: -1
 ZOverlay
   rotate: false
-  xy: 647, 469
-  size: 160, 240
-  orig: 160, 240
+  xy: 809, 711
+  size: 160, 232
+  orig: 160, 232
   offset: 0, 0
   index: -1
 Shadow
   rotate: false
-  xy: 1923, 1971
+  xy: 1923, 1963
   size: 62, 62
   orig: 62, 62
   offset: 0, 0
@@ -82,56 +89,56 @@ Ghost
   index: -1
 I
   rotate: false
-  xy: 163, 277
+  xy: 163, 269
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 J
   rotate: false
-  xy: 323, 435
+  xy: 323, 443
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 L
   rotate: false
-  xy: 809, 919
+  xy: 809, 677
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 O
   rotate: false
-  xy: 1923, 1937
+  xy: 971, 911
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 S
   rotate: false
-  xy: 1987, 2001
+  xy: 1923, 1929
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 T
   rotate: false
-  xy: 1, 1
+  xy: 1987, 1993
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 Z
   rotate: false
-  xy: 35, 35
+  xy: 1, 1
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 particle
   rotate: false
-  xy: 163, 259
+  xy: 35, 51
   size: 8, 16
   orig: 8, 16
   offset: 0, 0

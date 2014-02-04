@@ -9,6 +9,7 @@ public class TetrisBoard extends AbstractMessageListener {
 	private static final int BOARD_HEIGHT = 24;
 	private static final int BOARD_TOP_MARGIN = 2;
 	private static final int QUEUE_LENGTH = 3;
+	private static final int MAX_LOCK_RESETS = 5;
 	
 	//Score multipliers for no lines cleared, single, double, triple, and quad respectively.
 	private static final int[] scoreMultipliers = {0, 100, 300, 500, 800};
@@ -24,10 +25,11 @@ public class TetrisBoard extends AbstractMessageListener {
 	
 	private boolean left, right, down, held;
 	
+	private int lockResets = 0;
+	private int lastClear = 0;
 	private int score = 0;
 	private int level = 1;
 	private int goal;
-	private int lastClear = 0;
 	
 	private float softDropTime = 0.06818181818f;
 	private float fallTime = 1f;
@@ -56,10 +58,7 @@ public class TetrisBoard extends AbstractMessageListener {
 		down = false;
 		
 		level = l;
-		goal = level * 5;
-		fallTime = (float) (1/(Math.pow(1.3, level-1)));
-		softDropTime = (float) (0.068/Math.pow(1.15, level-1));
-		lockTime = fallTime/2;
+		calculateConstantsFromLevel();
 
 		this.messageSystem = messageSystem;
 		
@@ -106,14 +105,17 @@ public class TetrisBoard extends AbstractMessageListener {
 	public void update(float deltaTime) {
 		if (!loss) {
 			// Process DAS movement
-			if (moveTimer >= dasTime) {
+			while (moveTimer >= dasTime) {
 				if (left) {
 					moveLeft();
 				} else if (right) {
 					moveRight();
 				}
+				
 				moveTimer -= amTime;
-			} else if (left ^ right) {
+			}
+			
+			if (left ^ right) {
 				moveTimer += deltaTime;
 			} else {
 				moveTimer = 0f;
@@ -140,6 +142,7 @@ public class TetrisBoard extends AbstractMessageListener {
 				while (fallTimer >= softDropTime) {
 					if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y - 1)) {
 						--tetrominoPos.y;
+						lockResets = 0;
 						score += 1;
 						
 						messageSystem.postMessage(MessageSystem.Message.SOFT_DROPPED);
@@ -151,6 +154,7 @@ public class TetrisBoard extends AbstractMessageListener {
 				while (fallTimer >= fallTime) {
 					if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y - 1)) {
 						--tetrominoPos.y;
+						lockResets = 0;
 					}
 					fallTimer -= fallTime;
 					
@@ -255,8 +259,8 @@ public class TetrisBoard extends AbstractMessageListener {
 	private void moveRight() {
 		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x + 1, tetrominoPos.y)) {
 			++tetrominoPos.x;
-			lockTimer = 0f;
 			
+			resetLock();
 			messageSystem.postMessage(MessageSystem.Message.SHIFTED);
 		}
 	}
@@ -264,8 +268,8 @@ public class TetrisBoard extends AbstractMessageListener {
 	private void moveLeft() {
 		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x - 1, tetrominoPos.y)) {
 			--tetrominoPos.x;
-			lockTimer = 0f;
 			
+			resetLock();
 			messageSystem.postMessage(MessageSystem.Message.SHIFTED);
 		}
 	}
@@ -300,7 +304,7 @@ public class TetrisBoard extends AbstractMessageListener {
 				tetrominoPos.add(kickTranslation);
 
 				activeTetromino.rotateClockwise();
-				lockTimer = 0f;
+				resetLock();
 				break;
 			}
 		}
@@ -321,7 +325,7 @@ public class TetrisBoard extends AbstractMessageListener {
 				tetrominoPos.add(kickTranslation);
 
 				activeTetromino.rotateCounterClockwise();
-				lockTimer = 0f;
+				resetLock();
 				break;
 			}
 		}
@@ -351,6 +355,10 @@ public class TetrisBoard extends AbstractMessageListener {
 			
 			// Make it able for players to hold the piece again
 			held = false;
+			
+			// Make lock resets available again
+			lockResets = 0;
+			
 			return true;
 		}
 	}
@@ -367,8 +375,6 @@ public class TetrisBoard extends AbstractMessageListener {
 		tetrominoPos.y = BOARD_HEIGHT - 1 - activeTetromino.blockGrid.getHeight();
 		
 		tetrominoPos.add(Tetromino.spawnOffsets.get(activeTetromino.getName()));
-		
-		moveTimer = 0f;
 	}
 	
 	private int clearFullLines() {
@@ -426,7 +432,8 @@ public class TetrisBoard extends AbstractMessageListener {
 		}
 		
 		if (goal <= 0) {
-			incrementLevel();
+			++level;
+			calculateConstantsFromLevel();
 			
 			messageSystem.postMessage(Message.LEVEL_UP);
 		}
@@ -442,13 +449,21 @@ public class TetrisBoard extends AbstractMessageListener {
 		}
 	}
 	
-	private void incrementLevel() {
-		++level;
-		
+	private void calculateConstantsFromLevel() {		
 		goal = level * 5;
 		fallTime = (float) (1/(Math.pow(1.3, level-1)));
 		softDropTime = (float) (0.068/Math.pow(1.15, level-1));
 		lockTime = fallTime/2;
+	}
+	
+	private void resetLock() {
+		if (getGhostVector().y == tetrominoPos.y) {
+			++lockResets;
+			
+			if (lockResets < MAX_LOCK_RESETS) {
+				lockTimer = 0f;
+			}
+		}
 	}
 	
 }
