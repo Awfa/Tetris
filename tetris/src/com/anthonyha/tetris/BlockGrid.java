@@ -88,8 +88,6 @@ public class BlockGrid {
 
 		return false;
 	}
-	
-	
 
 	// Set block at coordinates (x,y)
 	public boolean setBlock(int x, int y, Block block) {
@@ -99,6 +97,15 @@ public class BlockGrid {
 		}
 
 		return false;
+	}
+	
+	// Set name of all the blocks
+	public void setName(TetrominoNames name) {
+		for (int x = 0; x < width; ++x) {
+			for (int y = 0; y < height; ++y) {
+				getBlock(x, y).name = name;
+			}
+		}
 	}
 
 	// Tests for intersection with anther block grid in relation to itself

@@ -46,6 +46,7 @@ public class TetrisBoard extends AbstractMessageListener {
 	public BlockGrid gameGrid;
 	public Tetromino activeTetromino;
 	public Tetromino heldTetromino;
+	public Tetromino ghostTetromino;
 	public Array<Tetromino> tetrominoQueue;
 
 	public Vector2 tetrominoPos;
@@ -304,6 +305,7 @@ public class TetrisBoard extends AbstractMessageListener {
 				tetrominoPos.add(kickTranslation);
 
 				activeTetromino.rotateClockwise();
+				ghostTetromino.rotateClockwise();
 				resetLock();
 				break;
 			}
@@ -325,6 +327,7 @@ public class TetrisBoard extends AbstractMessageListener {
 				tetrominoPos.add(kickTranslation);
 
 				activeTetromino.rotateCounterClockwise();
+				ghostTetromino.rotateCounterClockwise();
 				resetLock();
 				break;
 			}
@@ -373,6 +376,9 @@ public class TetrisBoard extends AbstractMessageListener {
 
 		tetrominoPos.x = BOARD_WIDTH / 2 - (activeTetromino.blockGrid.getWidth() + 1) / 2;
 		tetrominoPos.y = BOARD_HEIGHT - 1 - activeTetromino.blockGrid.getHeight();
+		
+		ghostTetromino = factory.getPiece(activeTetromino.getName());
+		ghostTetromino.blockGrid.setName(TetrominoNames.GHOST);
 		
 		tetrominoPos.add(Tetromino.spawnOffsets.get(activeTetromino.getName()));
 	}
