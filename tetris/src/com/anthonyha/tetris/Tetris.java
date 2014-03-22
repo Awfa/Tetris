@@ -23,8 +23,6 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 	private OrthographicCamera camera;
 	private SpriteBatch spriteBatch;
 	
-	private BitmapFont quantico42;
-	private BitmapFont quantico48;
 	private BitmapFont quantico64;
 	private BitmapFont quantico72;
 	
@@ -51,6 +49,9 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 	private static final int[] queueYOffsets = { 0, 228, 372 };
 	private static final int xBoardOffset = 800;
 	private static final int yBoardOffset = 1080-860;
+	private static final int essentialWidth = 700;
+	private static final int essentialHeight = 900;
+	
 	private TetrisBoard gameBoard;
 	
 	private MessageSystem messageSystem;
@@ -118,8 +119,6 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 
 		// Create fonts used by the game
 		FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/quantico/Quantico-Regular.otf"));
-		quantico42 = fontGenerator.generateFont(42);
-		quantico48 = fontGenerator.generateFont(48);
 		quantico64 = fontGenerator.generateFont(64);
 		quantico72 = fontGenerator.generateFont(72);
 		fontGenerator.dispose();
@@ -139,7 +138,7 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 	public void dispose() {
 		spriteBatch.dispose();
 		
-		quantico48.dispose();
+		quantico64.dispose();
 		quantico72.dispose();
 		
 		gameTextures.dispose();
@@ -150,7 +149,6 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 	public void render() {
 		Tetromino tetromino;
 		TetrominoNames blockName;
-		Sprite blockSprite;
 		Sprite overlaySprite = queueOverlaySprites.get(gameBoard.tetrominoQueue.get(0).getName());
 		
 		Gdx.gl.glClearColor(1f, 1f, 1f, 1);
@@ -172,7 +170,6 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		if (gameBoard.heldTetromino != null) {
 			tetromino = gameBoard.heldTetromino;
 			blockName = tetromino.getName();
-			blockSprite = blockSprites.get(blockName);
 			
 			overlaySprite = queueOverlaySprites.get(blockName);
 			overlaySprite.setPosition(620, 1080-444);
@@ -195,7 +192,6 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		for (int i = 0; i < gameBoard.tetrominoQueue.size; ++i) {
 			tetromino = gameBoard.tetrominoQueue.get(i);
 			blockName = tetromino.getName();
-			blockSprite = blockSprites.get(blockName);
 			
 			drawBlockGrid(tetromino.blockGrid, -Tetromino.origins.get(blockName).x + 1, -Tetromino.origins.get(blockName).y + 1, 1144 + tetrominoRenderOffsets.get(blockName).x, 1080-452 + tetrominoRenderOffsets.get(blockName).y - queueYOffsets[i]);
 		}
@@ -210,20 +206,30 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		    }
 		}
 
-		quantico72.draw(spriteBatch, padNumber(gameBoard.getScore(), 6), 818, 1080-100);
+		quantico72.draw(spriteBatch, padNumber(gameBoard.getScore(), 6), 818, 1080-125);
 		quantico64.draw(spriteBatch, padNumber(gameBoard.getLevel(), 2), 665, 1080-598);
 		quantico64.draw(spriteBatch, padNumber(gameBoard.getGoal(), 2), 660, 1080-814);
-		
-		quantico42.draw(spriteBatch, "Hold", 658, 1080-154);
-		quantico42.draw(spriteBatch, "Level", 654, 1080-506);
-		quantico42.draw(spriteBatch, "Goal", 660, 1080-722);
-		quantico42.draw(spriteBatch, "Queue", 1153, 1080-154);
 		
 		spriteBatch.end();
 	}
 	
 	@Override
 	public void resize(int width, int height) {
+		double aspectRatio = (double) width / height;
+
+		if (width < essentialWidth) {
+			height = (int) (essentialWidth / aspectRatio);
+			width = essentialWidth;
+		}
+		
+		if (height < essentialHeight) {
+			width = (int) (essentialHeight * aspectRatio);
+			height = essentialHeight;
+		}
+		
+		camera.setToOrtho(false, width, height);
+		camera.translate((background.getRegionWidth() - width) / 2f, background.getRegionHeight() - height);
+		camera.update();
 	}
 
 	@Override
