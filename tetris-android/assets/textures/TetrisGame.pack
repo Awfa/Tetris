@@ -1,18 +1,18 @@
 
 TetrisGame.png
 format: RGBA8888
-filter: Nearest,Nearest
+filter: MipMapLinearLinear,Nearest
 repeat: none
 Background
   rotate: false
-  xy: 1, 945
+  xy: 1, 929
   size: 1920, 1080
   orig: 1920, 1080
   offset: 0, 0
   index: -1
 Board
   rotate: false
-  xy: 1, 303
+  xy: 1, 287
   size: 320, 640
   orig: 320, 640
   offset: 0, 0
@@ -20,62 +20,62 @@ Board
 GhostOverlay
   rotate: false
   xy: 1, 69
-  size: 160, 232
-  orig: 160, 232
+  size: 168, 216
+  orig: 168, 216
   offset: 0, 0
   index: -1
 IOverlay
   rotate: false
   xy: 323, 711
-  size: 160, 232
-  orig: 160, 232
+  size: 168, 216
+  orig: 168, 216
   offset: 0, 0
   index: -1
 JOverlay
   rotate: false
-  xy: 323, 477
-  size: 160, 232
-  orig: 160, 232
+  xy: 323, 493
+  size: 168, 216
+  orig: 168, 216
   offset: 0, 0
   index: -1
 LOverlay
   rotate: false
-  xy: 485, 711
-  size: 160, 232
-  orig: 160, 232
+  xy: 493, 711
+  size: 168, 216
+  orig: 168, 216
   offset: 0, 0
   index: -1
 OOverlay
   rotate: false
-  xy: 485, 477
-  size: 160, 232
-  orig: 160, 232
+  xy: 493, 493
+  size: 168, 216
+  orig: 168, 216
   offset: 0, 0
   index: -1
 SOverlay
   rotate: false
-  xy: 647, 711
-  size: 160, 232
-  orig: 160, 232
+  xy: 663, 711
+  size: 168, 216
+  orig: 168, 216
   offset: 0, 0
   index: -1
 TOverlay
   rotate: false
-  xy: 647, 477
-  size: 160, 232
-  orig: 160, 232
+  xy: 663, 493
+  size: 168, 216
+  orig: 168, 216
   offset: 0, 0
   index: -1
 ZOverlay
   rotate: false
-  xy: 809, 711
-  size: 160, 232
-  orig: 160, 232
+  xy: 833, 711
+  size: 168, 216
+  orig: 168, 216
   offset: 0, 0
   index: -1
 Shadow
   rotate: false
-  xy: 1923, 1963
+  xy: 1923, 1947
   size: 62, 62
   orig: 62, 62
   offset: 0, 0
@@ -89,42 +89,42 @@ Ghost
   index: -1
 I
   rotate: false
-  xy: 163, 269
+  xy: 171, 253
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 J
   rotate: false
-  xy: 323, 443
+  xy: 323, 459
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 L
   rotate: false
-  xy: 809, 677
+  xy: 833, 677
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 O
   rotate: false
-  xy: 971, 911
+  xy: 1003, 895
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 S
   rotate: false
-  xy: 1923, 1929
+  xy: 1923, 1913
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 T
   rotate: false
-  xy: 1987, 1993
+  xy: 1987, 1977
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
