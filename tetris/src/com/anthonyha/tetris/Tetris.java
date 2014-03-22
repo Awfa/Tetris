@@ -304,7 +304,7 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		for (int x = 0; x < grid.getWidth(); ++x) {
 			for (int y = 0; y < grid.getHeight(); ++y) {
 				if (grid.getValue(x, y) && grid.getBlock(x, y).name != TetrominoNames.GHOST) {
-					drawBlock(dropShadow, (x + xGrid - 1) * scale + xOrigin - 16, (y + yGrid - 1) * scale + yOrigin - 16);
+					drawBlock(dropShadow, (x + xGrid - 1) * scale + xOrigin - 15, (y + yGrid - 1) * scale + yOrigin - 15);
 				}
 			}
 		}

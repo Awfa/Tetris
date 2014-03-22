@@ -1,7 +1,7 @@
 
 TetrisGame.png
 format: RGBA8888
-filter: MipMapLinearLinear,Nearest
+filter: Nearest,Nearest
 repeat: none
 Background
   rotate: false
