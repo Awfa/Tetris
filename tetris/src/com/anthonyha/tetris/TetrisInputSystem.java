@@ -45,7 +45,7 @@ public class TetrisInputSystem implements InputProcessor {
 			return true;
 			
 		} else if (keycode == Keys.ESCAPE) {
-			Gdx.graphics.setDisplayMode(1366, 768, false);
+			Gdx.graphics.setDisplayMode(1280, 720, false);
 			return true;
 			
 		} else if (keycode == Keys.BACKSPACE) {
