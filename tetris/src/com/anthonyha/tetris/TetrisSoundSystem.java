@@ -10,7 +10,7 @@ public class TetrisSoundSystem extends AbstractMessageListener implements Dispos
 	private float musicVolume;
 	private float sfxVolume;
 	
-	Sound shiftSound, hardDropSound;
+	private Sound shiftSound, hardDropSound, success;
 	
 	public TetrisSoundSystem(MessageSystem m) {
 		// Register for messages
@@ -18,10 +18,12 @@ public class TetrisSoundSystem extends AbstractMessageListener implements Dispos
 		m.add(this, Message.SHIFTED);
 		m.add(this, Message.HARD_DROPPED);
 		m.add(this, Message.ROWS_SCORED);
+		m.add(this, Message.LEVEL_UP);
 		
 		// Load sfx
 		shiftSound = Gdx.audio.newSound(Gdx.files.internal("sfx/shiftSound.wav"));
 		hardDropSound = Gdx.audio.newSound(Gdx.files.internal("sfx/hardDropSound.wav"));
+		success = Gdx.audio.newSound(Gdx.files.internal("sfx/success.wav"));
 		
 		// Default volumes
 		musicVolume = 1.0f;
@@ -38,6 +40,10 @@ public class TetrisSoundSystem extends AbstractMessageListener implements Dispos
 			
 		case HARD_DROPPED:
 			hardDropSound.play(sfxVolume);
+			break;
+			
+		case LEVEL_UP:
+			success.play(sfxVolume);
 			break;
 			
 		default:
