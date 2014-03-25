@@ -14,6 +14,11 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
@@ -33,6 +38,7 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 	private Sprite dropShadow;
 	private ObjectMap<TetrominoNames, Sprite> blockSprites;
 	private ObjectMap<TetrominoNames, Sprite> queueOverlaySprites;
+	private ObjectMap<MessageSystem.Extra, Sprite> messageSprites;
 	
 	private static final ObjectMap<TetrominoNames, Vector2> tetrominoRenderOffsets;
 	static {
@@ -56,6 +62,8 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 	
 	private MessageSystem messageSystem;
 	private TetrisSoundSystem tetrisSoundSystem;
+	
+	private Stage stage;
 	
 	ParticleEffectPool tetrisExplosionEffectPool;
 	Array<PooledEffect> effects;
@@ -98,15 +106,17 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		queueOverlaySprites.put(TetrominoNames.L, gameTextures.createSprite("LOverlay"));
 		queueOverlaySprites.put(TetrominoNames.GHOST, gameTextures.createSprite("GhostOverlay"));
 		
-		for (Sprite overlay : queueOverlaySprites.values()) {
-			overlay.setPosition(1136, 1080-468);
-		}
+		messageSprites = new ObjectMap<MessageSystem.Extra, Sprite>();
+		messageSprites.put(MessageSystem.Extra.DOUBLE_SCORED, gameTextures.createSprite("double"));
+		messageSprites.put(MessageSystem.Extra.TRIPLE_SCORED, gameTextures.createSprite("triple"));
+		messageSprites.put(MessageSystem.Extra.TETRIS_SCORED, gameTextures.createSprite("tetris"));
+		messageSprites.put(MessageSystem.Extra.BACKTOBACK_SCORED, gameTextures.createSprite("backtoback"));
 		
-		dropShadow = gameTextures.createSprite("Shadow");
 		
-		// Create background and board sprites
+		// Create sprites
 		background = gameTextures.createSprite("Background");
 		board = gameTextures.createSprite("Board");
+		dropShadow = gameTextures.createSprite("Shadow");
 		
 		// Create game model
 		gameBoard = new TetrisBoard(13, 1, messageSystem);
@@ -131,6 +141,11 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		
 		tetrisSoundSystem = new TetrisSoundSystem(messageSystem);
 		tetrisSoundSystem.setSfxVolume(0.5f);
+		
+		// Set the stage
+		stage = new Stage(w, h, true);
+		stage.setCamera(camera);
+		
 		Gdx.input.setInputProcessor(new TetrisInputSystem(messageSystem));
 	}
 
@@ -143,6 +158,7 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		
 		gameTextures.dispose();
 		tetrisSoundSystem.dispose();
+		stage.dispose();
 	}
 
 	@Override
@@ -156,10 +172,12 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 
 		gameBoard.update(Gdx.graphics.getDeltaTime());
 		
+		
 		spriteBatch.setProjectionMatrix(camera.combined);
 		spriteBatch.begin();
 		
 		spriteBatch.draw(board, xBoardOffset, yBoardOffset); // Render board
+		
 		drawBlockGrid(gameBoard.gameGrid, 0, 0); // Render game grid
 		drawBlockGrid(gameBoard.ghostTetromino.blockGrid, gameBoard.getGhostVector().x, gameBoard.getGhostVector().y); // Render ghost piece		
 		drawBlockGrid(gameBoard.activeTetromino.blockGrid, gameBoard.tetrominoPos.x, gameBoard.tetrominoPos.y); // Render active tetromino
@@ -211,6 +229,9 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		quantico64.draw(spriteBatch, padNumber(gameBoard.getGoal(), 2), 660, 1080-814);
 		
 		spriteBatch.end();
+		
+		stage.act();
+		stage.draw();
 	}
 	
 	@Override
@@ -230,6 +251,7 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 		camera.setToOrtho(false, width, height);
 		camera.translate((background.getRegionWidth() - width) / 2f, background.getRegionHeight() - height);
 		camera.update();
+		
 	}
 
 	@Override
@@ -258,21 +280,24 @@ public class Tetris extends AbstractMessageListener implements ApplicationListen
 	public void recieveMessage(MessageSystem.Message message, MessageSystem.Extra extra) {
 		switch(message) {
 		case ROWS_SCORED:
+			float halfPoint = (xBoardOffset + 5.f * scale);
+			Actor actor;
+			
 			switch(extra) {
 			case SINGLE_SCORED:
 				
 				break;
 			case DOUBLE_SCORED:
-				
-				break;
 			case TRIPLE_SCORED:
-				
-				break;
 			case TETRIS_SCORED:
-				
-				break;
 			case BACKTOBACK_SCORED:
-				
+				actor = new Image(messageSprites.get(extra));
+				stage.addActor(actor);
+				actor.addAction(Actions.sequence(Actions.moveTo(-actor.getWidth(), yBoardOffset + 500f),
+						Actions.moveTo(halfPoint - actor.getWidth() / 2 - 10, yBoardOffset + 500, 0.2f, Interpolation.swingIn),
+						Actions.moveTo(halfPoint - actor.getWidth() / 2 + 10, yBoardOffset + 500, 0.5f, Interpolation.linear),
+						Actions.moveTo(stage.getWidth(), yBoardOffset + 500, 0.2f, Interpolation.swingOut),
+						Actions.removeActor()));
 				break;
 			case TSPIN_SCORED:
 				
