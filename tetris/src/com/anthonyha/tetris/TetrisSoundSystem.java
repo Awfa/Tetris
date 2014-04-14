@@ -2,6 +2,7 @@ package com.anthonyha.tetris;
 
 import com.anthonyha.tetris.MessageSystem.Message;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.utils.Disposable;
 
@@ -11,6 +12,7 @@ public class TetrisSoundSystem extends AbstractMessageListener implements Dispos
 	private float sfxVolume;
 	
 	private Sound shiftSound, hardDropSound, success;
+	private Music theme;
 	
 	public TetrisSoundSystem(MessageSystem m) {
 		// Register for messages
@@ -25,9 +27,16 @@ public class TetrisSoundSystem extends AbstractMessageListener implements Dispos
 		hardDropSound = Gdx.audio.newSound(Gdx.files.internal("sfx/hardDropSound.wav"));
 		success = Gdx.audio.newSound(Gdx.files.internal("sfx/success.wav"));
 		
+		// Load music
+		theme = Gdx.audio.newMusic(Gdx.files.internal("music/tetrisTheme.mp3"));
+		
 		// Default volumes
 		musicVolume = 1.0f;
 		sfxVolume = 1.0f;
+		
+		theme.setLooping(true);
+		theme.setVolume(musicVolume * 0.25f); // Normalize the volume
+		theme.play();
 	}
 	
 	@Override
@@ -88,6 +97,7 @@ public class TetrisSoundSystem extends AbstractMessageListener implements Dispos
 
 	public void setMusicVolume(float musicVolume) {
 		this.musicVolume = musicVolume;
+		theme.setVolume(musicVolume);
 	}
 
 	public float getSfxVolume() {
@@ -100,8 +110,10 @@ public class TetrisSoundSystem extends AbstractMessageListener implements Dispos
 
 	@Override
 	public void dispose() {
+		theme.dispose();
 		shiftSound.dispose();
 		hardDropSound.dispose();
+		success.dispose();
 	}
 	
 }
