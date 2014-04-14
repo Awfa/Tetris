@@ -1,0 +1,21 @@
+
+MainMenu.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+grayButtonUp
+  rotate: false
+  xy: 1, 1
+  size: 132, 132
+  split: 5, 5, 5, 21
+  orig: 132, 132
+  offset: 0, 0
+  index: -1
+grayButtonDown
+  rotate: false
+  xy: 135, 9
+  size: 132, 124
+  split: 5, 5, 5, 13
+  orig: 132, 124
+  offset: 0, 0
+  index: -1
