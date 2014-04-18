@@ -8,24 +8,38 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider.SliderStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 public class TetrisMainMenu implements Screen {
 	private final Tetris game;
 	private Stage stage;
 	private TextureAtlas atlas;
 	private BitmapFont quantico;
+	private BitmapFont quanticoHeader;
 	
 	public TetrisMainMenu(final Tetris game) {
-		float w = Gdx.graphics.getWidth();
-		float h = Gdx.graphics.getHeight();
-		float buttonWidth = 432.f;
+		final Table mainMenu = new Table();
+		final Table optionsMenu = new Table();
+		float buttonWidth = 432f;
+		float spacing = 32f;
+		float spacingTop = 64f;
 		
 		this.game = game;
 		
@@ -35,34 +49,88 @@ public class TetrisMainMenu implements Screen {
 		
 		FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/quantico/Quantico-Bold.otf"));
 		quantico = fontGenerator.generateFont(48);
+		quanticoHeader = fontGenerator.generateFont(64);
 		fontGenerator.dispose();
 		
 		atlas = new TextureAtlas(Gdx.files.internal("textures/MainMenu.pack"));
+
+		mainMenu.setFillParent(true);
+		optionsMenu.setFillParent(true);
 		
-		Table table = new Table();
-		table.setFillParent(true);
-		stage.addActor(table);
+		stage.addActor(mainMenu);
+		stage.addActor(optionsMenu);
+		
+		
+		
 		
 		TextButtonStyle normalButtonStyle = new TextButtonStyle();
-		normalButtonStyle.up = new NinePatchDrawable(atlas.createPatch("grayButtonUp"));
-		normalButtonStyle.down = new NinePatchDrawable(atlas.createPatch("grayButtonDown"));
+		normalButtonStyle.up = new NinePatchDrawable(atlas.createPatch("ButtonUp"));
+		normalButtonStyle.down = new NinePatchDrawable(atlas.createPatch("ButtonDown"));
 		normalButtonStyle.font = quantico;
 		normalButtonStyle.fontColor = new Color(0.28f, 0.28f, 0.28f, 1.f);
-		normalButtonStyle.pressedOffsetY = -8.f;
 		
 		TextButtonStyle playButtonStyle = new TextButtonStyle(normalButtonStyle);
 		playButtonStyle.fontColor = Color.BLACK;
 		
-		TextButton playButton = new TextButton("PLAY GAME", playButtonStyle);
+		SliderStyle optionsSliderStyle = new SliderStyle();
+		optionsSliderStyle.background = new NinePatchDrawable(atlas.createPatch("Slider"));
+		optionsSliderStyle.knob = new TextureRegionDrawable(atlas.findRegion("SliderKnob"));
+		
+		LabelStyle optionsLabelStyle = new LabelStyle();
+		optionsLabelStyle.background = new NinePatchDrawable(atlas.createPatch("ButtonUp"));
+		optionsLabelStyle.font = quantico;
+		optionsLabelStyle.fontColor = new Color(0.28f, 0.28f, 0.28f, 1.f);
+		
+		LabelStyle optionsHeaderStyle = new LabelStyle(optionsLabelStyle);
+		optionsHeaderStyle.font = quanticoHeader;
+		optionsHeaderStyle.fontColor = Color.BLACK;
+		
+		// Filling the main menu
+		Image mainMenuTitle = new Image(atlas.findRegion("title"));
+		TextButton playButton = new TextButton("Play Game", playButtonStyle);
 		TextButton optionButton = new TextButton("Options", normalButtonStyle);
 		TextButton exitButton = new TextButton("Exit", normalButtonStyle);
 		
-		table.bottom();
-		table.add(playButton).width(buttonWidth).spaceBottom(32f);
-		table.row();
-		table.add(optionButton).width(buttonWidth).spaceBottom(32f);
-		table.row();
-		table.add(exitButton).width(buttonWidth).padBottom(32f);
+		mainMenu.top();
+		mainMenu.add(mainMenuTitle).padTop(spacingTop).spaceBottom(spacing);
+		mainMenu.row();
+		mainMenu.add(playButton).width(buttonWidth).spaceBottom(spacing);
+		mainMenu.row();
+		mainMenu.add(optionButton).width(buttonWidth).spaceBottom(spacing);
+		mainMenu.row();
+		mainMenu.add(exitButton).width(buttonWidth).padBottom(spacing);
+		
+		// Filling the options menu
+		Label optionsTitle = new Label("Options", optionsHeaderStyle);
+		Label musicVolume = new Label("Music Vol: 10", optionsLabelStyle);
+		Label sfxVolume = new Label("SFX Vol: 10", optionsLabelStyle);
+		
+		optionsTitle.setAlignment(Align.center);
+		musicVolume.setAlignment(Align.right);
+		sfxVolume.setAlignment(Align.right);
+		
+		Slider musicSlider = new Slider(0.f, 10.f, 0.1f, false, optionsSliderStyle);
+		Slider sfxSlider = new Slider(0.f, 10.f, 0.1f, false, optionsSliderStyle);
+		
+		TextButton backButton = new TextButton("Back", normalButtonStyle);
+		
+		musicSlider.setValue(10.f);
+		sfxSlider.setValue(10.f);
+		
+		optionsMenu.top();
+		optionsMenu.add(optionsTitle).width(buttonWidth).padTop(spacingTop).spaceBottom(spacing);
+		optionsMenu.row();
+		optionsMenu.add(musicVolume).width(buttonWidth).right();
+		optionsMenu.add(musicSlider).width(buttonWidth);
+		optionsMenu.row();
+		optionsMenu.add(sfxVolume).width(buttonWidth).right().spaceBottom(spacing);
+		optionsMenu.add(sfxSlider).width(buttonWidth);
+		optionsMenu.row();
+		optionsMenu.add(backButton).width(buttonWidth).padBottom(spacing);
+		optionsMenu.validate();
+		
+		// Move options menu off screen
+		optionsMenu.setX(optionsMenu.getWidth());
 		
 		playButton.addListener(new ChangeListener() {
 			@Override
@@ -75,7 +143,8 @@ public class TetrisMainMenu implements Screen {
 		optionButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				
+				mainMenu.addAction(Actions.moveTo(-mainMenu.getWidth(), 0f, 0.5f, Interpolation.swingOut));
+				optionsMenu.addAction(Actions.moveTo(0f, 0f, 0.5f, Interpolation.swingIn));
 			}
 		});
 		
@@ -86,7 +155,13 @@ public class TetrisMainMenu implements Screen {
 			}
 		});
 		
-		
+		backButton.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				mainMenu.addAction(Actions.moveTo(0f, 0f, 0.5f, Interpolation.swingIn));
+				optionsMenu.addAction(Actions.moveTo(optionsMenu.getWidth(), 0f, 0.5f, Interpolation.swingOut));
+			}
+		});
 	}
 	
 	@Override
