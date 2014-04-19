@@ -17,18 +17,18 @@ public class TetrisBoard extends AbstractMessageListener {
 	private TetrominoFactory factory;
 	private MessageSystem messageSystem;
 	
-	private float fallTimer = 0f;
-	private float lockTimer = 0f;
-	private float moveTimer = 0f;
+	private float fallTimer;
+	private float lockTimer;
+	private float moveTimer;
 
-	private boolean loss = false;
+	private boolean loss;
 	
 	private boolean left, right, down, held;
 	
 	private int lockResets = 0;
 	private int lastClear = 0;
 	private int score = 0;
-	private int level = 1;
+	private int level;
 	private int goal;
 	
 	private float softDropTime = 0.06818181818f;
@@ -36,6 +36,8 @@ public class TetrisBoard extends AbstractMessageListener {
 	private float lockTime = 0.5f;
 	private float dasTime = 0.2666666f;
 	private float amTime = 0.0388888f;
+	
+	private boolean isPaused;
 	
 	private BlockGrid spawnField;
 	
@@ -52,15 +54,7 @@ public class TetrisBoard extends AbstractMessageListener {
 	public Vector2 tetrominoPos;
 	
 
-	public TetrisBoard(long seed, int l, MessageSystem messageSystem) {
-		tetrominoPos = new Vector2(0, 0);
-		left = false;
-		right = false;
-		down = false;
-		
-		level = l;
-		calculateConstantsFromLevel();
-
+	public TetrisBoard(long seed, int level, MessageSystem messageSystem) {
 		this.messageSystem = messageSystem;
 		
 		messageSystem.add(this, Message.LEFT);
@@ -70,41 +64,19 @@ public class TetrisBoard extends AbstractMessageListener {
 		messageSystem.add(this, Message.SOFT_DROP);
 		messageSystem.add(this, Message.HARD_DROP);
 		messageSystem.add(this, Message.HOLD);
+		messageSystem.add(this, Message.GAME_TOGGLE_PAUSE);
+		messageSystem.add(this, Message.RESTART_GAME);
+		
+		tetrominoPos = new Vector2(0, 0);
 		
 		factory = new RandomTetrominoFactory();
 		factory.setSeed(seed);
-
-		// Make game grid
-		gameGrid = new BlockGrid(BOARD_WIDTH, BOARD_HEIGHT);
-
-		for (int x = 0; x < BOARD_WIDTH; ++x) {
-			gameGrid.setValue(x, 0, true);
-			gameGrid.setValue(x, BOARD_HEIGHT - 1, true);
-		}
-
-		for (int y = 0; y < BOARD_HEIGHT; ++y) {
-			gameGrid.setValue(0, y, true);
-			gameGrid.setValue(BOARD_WIDTH - 1, y, true);
-		}
 		
-		spawnField = new BlockGrid(BOARD_WIDTH-2, BOARD_TOP_MARGIN);
-		for (int x = 0; x < BOARD_WIDTH-2; ++x) {
-			for (int y = 0; y < BOARD_TOP_MARGIN; ++y) {
-				spawnField.setValue(x, y, true);
-			}
-		}
-		
-		tetrominoQueue = new Array<Tetromino>(QUEUE_LENGTH);
-
-		for (int i = 0; i < QUEUE_LENGTH; ++i) {
-			tetrominoQueue.add(factory.getPiece());
-		}
-
-		spawnTetromino();
+		setGameUp(level);
 	}
 
 	public void update(float deltaTime) {
-		if (!loss) {
+		if (!loss && !isPaused) {
 			// Process DAS movement
 			while (moveTimer >= dasTime) {
 				if (left) {
@@ -213,6 +185,22 @@ public class TetrisBoard extends AbstractMessageListener {
 				holdPiece();
 				break;
 				
+			case GAME_TOGGLE_PAUSE:
+				isPaused = !isPaused;
+				
+				if (isPaused) {
+					messageSystem.postMessage(Message.GAME_PAUSED);
+				} else {
+					messageSystem.postMessage(Message.GAME_RESUMED);
+				}
+				
+				break;
+				
+			case RESTART_GAME:
+				setGameUp(1);
+				messageSystem.postMessage(Message.GAME_RESUMED);
+				break;
+				
 			default:
 				break;
 			}
@@ -248,7 +236,7 @@ public class TetrisBoard extends AbstractMessageListener {
 	}
 	
 	private void hardDrop() {
-		while(!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y-1)) {
+		while(!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y-1) && !isPaused) {
 			--tetrominoPos.y;
 			score += 2;
 		}
@@ -258,7 +246,7 @@ public class TetrisBoard extends AbstractMessageListener {
 	}
 
 	private void moveRight() {
-		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x + 1, tetrominoPos.y)) {
+		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x + 1, tetrominoPos.y) && !isPaused) {
 			++tetrominoPos.x;
 			
 			resetLock();
@@ -267,7 +255,7 @@ public class TetrisBoard extends AbstractMessageListener {
 	}
 
 	private void moveLeft() {
-		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x - 1, tetrominoPos.y)) {
+		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x - 1, tetrominoPos.y) && !isPaused) {
 			--tetrominoPos.x;
 			
 			resetLock();
@@ -276,7 +264,7 @@ public class TetrisBoard extends AbstractMessageListener {
 	}
 	
 	private void holdPiece() {
-		if (!held) {
+		if (!held && !isPaused) {
 			TetrominoNames activeName = activeTetromino.getName();
 			
 			if (heldTetromino == null) {
@@ -291,45 +279,49 @@ public class TetrisBoard extends AbstractMessageListener {
 	}
 
 	private void rotateClockwise() {
-		Tetromino temp = new Tetromino(activeTetromino);
-		temp.rotateClockwise();
-
-		for (int offset = 0; offset < activeTetromino.offsetData[0].length; ++offset) {
-			// Derive kick translations from offsets
-			Vector2 offsetPreRot = new Vector2(activeTetromino.offsetData[activeTetromino.getRotationState().ordinal()][offset]);
-			Vector2 offsetPostRot = activeTetromino.offsetData[temp.getRotationState().ordinal()][offset];
-			Vector2 kickTranslation = offsetPreRot.sub(offsetPostRot);
-
-			// If there isn't an intersection, then apply offset and be done
-			if (!gameGrid.intersects(temp.blockGrid, tetrominoPos.x + kickTranslation.x, tetrominoPos.y + kickTranslation.y)) {
-				tetrominoPos.add(kickTranslation);
-
-				activeTetromino.rotateClockwise();
-				ghostTetromino.rotateClockwise();
-				resetLock();
-				break;
+		if (!isPaused) {
+			Tetromino temp = new Tetromino(activeTetromino);
+			temp.rotateClockwise();
+	
+			for (int offset = 0; offset < activeTetromino.offsetData[0].length; ++offset) {
+				// Derive kick translations from offsets
+				Vector2 offsetPreRot = new Vector2(activeTetromino.offsetData[activeTetromino.getRotationState().ordinal()][offset]);
+				Vector2 offsetPostRot = activeTetromino.offsetData[temp.getRotationState().ordinal()][offset];
+				Vector2 kickTranslation = offsetPreRot.sub(offsetPostRot);
+	
+				// If there isn't an intersection, then apply offset and be done
+				if (!gameGrid.intersects(temp.blockGrid, tetrominoPos.x + kickTranslation.x, tetrominoPos.y + kickTranslation.y)) {
+					tetrominoPos.add(kickTranslation);
+	
+					activeTetromino.rotateClockwise();
+					ghostTetromino.rotateClockwise();
+					resetLock();
+					break;
+				}
 			}
 		}
 	}
 
 	private void rotateCounterClockwise() {
-		Tetromino temp = new Tetromino(activeTetromino);
-		temp.rotateCounterClockwise();
-
-		for (int offset = 0; offset < activeTetromino.offsetData[0].length; ++offset) {
-			// Derive kick translations from offsets
-			Vector2 offsetPreRot = new Vector2(activeTetromino.offsetData[activeTetromino.getRotationState().ordinal()][offset]);
-			Vector2 offsetPostRot = activeTetromino.offsetData[temp.getRotationState().ordinal()][offset];
-			Vector2 kickTranslation = offsetPreRot.sub(offsetPostRot);
-
-			// If there isn't an intersection, then apply offset and be done
-			if (!gameGrid.intersects(temp.blockGrid, tetrominoPos.x + kickTranslation.x, tetrominoPos.y + kickTranslation.y)) {
-				tetrominoPos.add(kickTranslation);
-
-				activeTetromino.rotateCounterClockwise();
-				ghostTetromino.rotateCounterClockwise();
-				resetLock();
-				break;
+		if (!isPaused) {
+			Tetromino temp = new Tetromino(activeTetromino);
+			temp.rotateCounterClockwise();
+	
+			for (int offset = 0; offset < activeTetromino.offsetData[0].length; ++offset) {
+				// Derive kick translations from offsets
+				Vector2 offsetPreRot = new Vector2(activeTetromino.offsetData[activeTetromino.getRotationState().ordinal()][offset]);
+				Vector2 offsetPostRot = activeTetromino.offsetData[temp.getRotationState().ordinal()][offset];
+				Vector2 kickTranslation = offsetPreRot.sub(offsetPostRot);
+	
+				// If there isn't an intersection, then apply offset and be done
+				if (!gameGrid.intersects(temp.blockGrid, tetrominoPos.x + kickTranslation.x, tetrominoPos.y + kickTranslation.y)) {
+					tetrominoPos.add(kickTranslation);
+	
+					activeTetromino.rotateCounterClockwise();
+					ghostTetromino.rotateCounterClockwise();
+					resetLock();
+					break;
+				}
 			}
 		}
 	}
@@ -470,6 +462,58 @@ public class TetrisBoard extends AbstractMessageListener {
 				lockTimer = 0f;
 			}
 		}
+	}
+	
+	private void setGameUp(int level) {
+		heldTetromino = null;
+		activeTetromino = null;
+		
+		loss = false;
+		left = false;
+		right = false;
+		down = false;
+		isPaused = false;
+		
+		fallTimer = 0f;
+		lockTimer = 0f;
+		moveTimer = 0f;
+		
+		lockResets = 0;
+		lastClear = 0;
+		score = 0;
+		
+		this.level = level;
+		calculateConstantsFromLevel();
+		
+		factory.reset();
+		
+		// Make game grid
+		gameGrid = new BlockGrid(BOARD_WIDTH, BOARD_HEIGHT);
+
+		for (int x = 0; x < BOARD_WIDTH; ++x) {
+			gameGrid.setValue(x, 0, true);
+			gameGrid.setValue(x, BOARD_HEIGHT - 1, true);
+		}
+
+		for (int y = 0; y < BOARD_HEIGHT; ++y) {
+			gameGrid.setValue(0, y, true);
+			gameGrid.setValue(BOARD_WIDTH - 1, y, true);
+		}
+		
+		spawnField = new BlockGrid(BOARD_WIDTH-2, BOARD_TOP_MARGIN);
+		for (int x = 0; x < BOARD_WIDTH-2; ++x) {
+			for (int y = 0; y < BOARD_TOP_MARGIN; ++y) {
+				spawnField.setValue(x, y, true);
+			}
+		}
+		
+		tetrominoQueue = new Array<Tetromino>(QUEUE_LENGTH);
+
+		for (int i = 0; i < QUEUE_LENGTH; ++i) {
+			tetrominoQueue.add(factory.getPiece());
+		}
+
+		spawnTetromino();
 	}
 	
 }

@@ -30,9 +30,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 public class TetrisMainMenu implements Screen {
 	private final Tetris game;
 	private Stage stage;
-	private TextureAtlas atlas;
-	private BitmapFont quantico;
-	private BitmapFont quanticoHeader;
 	
 	public TetrisMainMenu(final Tetris game) {
 		final Table mainMenu = new Table();
@@ -47,46 +44,36 @@ public class TetrisMainMenu implements Screen {
 		
 		Gdx.input.setInputProcessor(stage);
 		
-		FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/quantico/Quantico-Bold.otf"));
-		quantico = fontGenerator.generateFont(48);
-		quanticoHeader = fontGenerator.generateFont(64);
-		fontGenerator.dispose();
-		
-		atlas = new TextureAtlas(Gdx.files.internal("textures/MainMenu.pack"));
-
 		mainMenu.setFillParent(true);
 		optionsMenu.setFillParent(true);
 		
 		stage.addActor(mainMenu);
-		stage.addActor(optionsMenu);
-		
-		
-		
+		stage.addActor(optionsMenu);		
 		
 		TextButtonStyle normalButtonStyle = new TextButtonStyle();
-		normalButtonStyle.up = new NinePatchDrawable(atlas.createPatch("ButtonUp"));
-		normalButtonStyle.down = new NinePatchDrawable(atlas.createPatch("ButtonDown"));
-		normalButtonStyle.font = quantico;
+		normalButtonStyle.up = new NinePatchDrawable(game.uiAtlas.createPatch("ButtonUp"));
+		normalButtonStyle.down = new NinePatchDrawable(game.uiAtlas.createPatch("ButtonDown"));
+		normalButtonStyle.font = game.quantico48;
 		normalButtonStyle.fontColor = new Color(0.28f, 0.28f, 0.28f, 1.f);
 		
 		TextButtonStyle playButtonStyle = new TextButtonStyle(normalButtonStyle);
 		playButtonStyle.fontColor = Color.BLACK;
 		
 		SliderStyle optionsSliderStyle = new SliderStyle();
-		optionsSliderStyle.background = new NinePatchDrawable(atlas.createPatch("Slider"));
-		optionsSliderStyle.knob = new TextureRegionDrawable(atlas.findRegion("SliderKnob"));
+		optionsSliderStyle.background = new NinePatchDrawable(game.uiAtlas.createPatch("Slider"));
+		optionsSliderStyle.knob = new TextureRegionDrawable(game.uiAtlas.findRegion("SliderKnob"));
 		
 		LabelStyle optionsLabelStyle = new LabelStyle();
-		optionsLabelStyle.background = new NinePatchDrawable(atlas.createPatch("ButtonUp"));
-		optionsLabelStyle.font = quantico;
+		optionsLabelStyle.background = new NinePatchDrawable(game.uiAtlas.createPatch("ButtonUp"));
+		optionsLabelStyle.font = game.quantico48;
 		optionsLabelStyle.fontColor = new Color(0.28f, 0.28f, 0.28f, 1.f);
 		
 		LabelStyle optionsHeaderStyle = new LabelStyle(optionsLabelStyle);
-		optionsHeaderStyle.font = quanticoHeader;
+		optionsHeaderStyle.font = game.quantico64;
 		optionsHeaderStyle.fontColor = Color.BLACK;
 		
 		// Filling the main menu
-		Image mainMenuTitle = new Image(atlas.findRegion("title"));
+		Image mainMenuTitle = new Image(game.uiAtlas.findRegion("title"));
 		TextButton playButton = new TextButton("Play Game", playButtonStyle);
 		TextButton optionButton = new TextButton("Options", normalButtonStyle);
 		TextButton exitButton = new TextButton("Exit", normalButtonStyle);
@@ -205,8 +192,6 @@ public class TetrisMainMenu implements Screen {
 	@Override
 	public void dispose() {
 		stage.dispose();
-		quantico.dispose();
-		atlas.dispose();
 	}
 	
 }

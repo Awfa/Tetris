@@ -21,6 +21,9 @@ public class TetrisSoundSystem extends AbstractMessageListener implements Dispos
 		m.add(this, Message.HARD_DROPPED);
 		m.add(this, Message.ROWS_SCORED);
 		m.add(this, Message.LEVEL_UP);
+		m.add(this, Message.GAME_PAUSED);
+		m.add(this, Message.GAME_RESUMED);
+		m.add(this, Message.RESTART_GAME);
 		
 		// Load sfx
 		shiftSound = Gdx.audio.newSound(Gdx.files.internal("sfx/shiftSound.wav"));
@@ -36,7 +39,6 @@ public class TetrisSoundSystem extends AbstractMessageListener implements Dispos
 		
 		theme.setLooping(true);
 		theme.setVolume(musicVolume * 0.25f); // Normalize the volume
-		theme.play();
 	}
 	
 	@Override
@@ -54,7 +56,17 @@ public class TetrisSoundSystem extends AbstractMessageListener implements Dispos
 		case LEVEL_UP:
 			success.play(sfxVolume);
 			break;
+		
+		case GAME_PAUSED:
+			theme.pause();
+			break;
 			
+		case GAME_RESUMED:
+			theme.play();
+			break;
+
+		case RESTART_GAME:
+			theme.stop();
 		default:
 			break;
 		}

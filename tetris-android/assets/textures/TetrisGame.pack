@@ -5,168 +5,175 @@ filter: Nearest,Nearest
 repeat: none
 Background
   rotate: false
-  xy: 1, 956
+  xy: 1, 965
   size: 1920, 1080
   orig: 1920, 1080
   offset: 0, 0
   index: -1
+PauseOverlay
+  rotate: false
+  xy: 1, 243
+  size: 1280, 720
+  orig: 1280, 720
+  offset: 0, 0
+  index: -1
 Board
   rotate: false
-  xy: 1, 314
+  xy: 1283, 323
   size: 320, 640
   orig: 320, 640
   offset: 0, 0
   index: -1
 backtoback
   rotate: false
-  xy: 323, 861
+  xy: 1, 148
   size: 387, 93
   orig: 387, 93
   offset: 0, 0
   index: -1
 GhostOverlay
   rotate: false
-  xy: 1, 96
+  xy: 1605, 747
   size: 168, 216
   orig: 168, 216
   offset: 0, 0
   index: -1
 IOverlay
   rotate: false
-  xy: 323, 643
+  xy: 1605, 529
   size: 168, 216
   orig: 168, 216
   offset: 0, 0
   index: -1
 JOverlay
   rotate: false
-  xy: 323, 425
+  xy: 1605, 311
   size: 168, 216
   orig: 168, 216
   offset: 0, 0
   index: -1
 LOverlay
   rotate: false
-  xy: 493, 643
+  xy: 1775, 747
   size: 168, 216
   orig: 168, 216
   offset: 0, 0
   index: -1
 OOverlay
   rotate: false
-  xy: 493, 425
+  xy: 1775, 529
   size: 168, 216
   orig: 168, 216
   offset: 0, 0
   index: -1
 SOverlay
   rotate: false
-  xy: 171, 96
+  xy: 1775, 311
   size: 168, 216
   orig: 168, 216
   offset: 0, 0
   index: -1
 double
   rotate: false
-  xy: 712, 861
+  xy: 1, 53
   size: 247, 93
   orig: 247, 93
   offset: 0, 0
   index: -1
-TOverlay
-  rotate: false
-  xy: 663, 643
-  size: 168, 216
-  orig: 168, 216
-  offset: 0, 0
-  index: -1
-ZOverlay
-  rotate: false
-  xy: 663, 425
-  size: 168, 216
-  orig: 168, 216
-  offset: 0, 0
-  index: -1
 tetris
   rotate: false
-  xy: 1, 1
+  xy: 390, 148
   size: 212, 93
   orig: 212, 93
   offset: 0, 0
   index: -1
 triple
   rotate: false
-  xy: 323, 330
+  xy: 250, 53
   size: 205, 93
   orig: 205, 93
   offset: 0, 0
   index: -1
+TOverlay
+  rotate: false
+  xy: 604, 25
+  size: 168, 216
+  orig: 168, 216
+  offset: 0, 0
+  index: -1
+ZOverlay
+  rotate: false
+  xy: 774, 25
+  size: 168, 216
+  orig: 168, 216
+  offset: 0, 0
+  index: -1
 Shadow
   rotate: false
-  xy: 1923, 1974
+  xy: 1283, 259
   size: 62, 62
   orig: 62, 62
   offset: 0, 0
   index: -1
 Ghost
   rotate: false
-  xy: 961, 922
+  xy: 1923, 2013
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 I
   rotate: false
-  xy: 833, 827
+  xy: 1, 19
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 J
   rotate: false
-  xy: 215, 62
+  xy: 457, 114
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 L
   rotate: false
-  xy: 530, 391
+  xy: 944, 209
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 O
   rotate: false
-  xy: 1923, 1940
+  xy: 1347, 289
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 S
   rotate: false
-  xy: 1987, 2004
+  xy: 1923, 1979
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 T
   rotate: false
-  xy: 961, 888
+  xy: 1957, 2013
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 Z
   rotate: false
-  xy: 995, 922
+  xy: 35, 19
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 particle
   rotate: false
-  xy: 833, 809
+  xy: 1, 1
   size: 8, 16
   orig: 8, 16
   offset: 0, 0

@@ -6,5 +6,6 @@ public interface TetrominoFactory {
 	public Tetromino getPiece();
 	public Tetromino getPiece(TetrominoNames tetrominoName);
 	public void setSeed(long seed);
+	public void reset();
 	
 }

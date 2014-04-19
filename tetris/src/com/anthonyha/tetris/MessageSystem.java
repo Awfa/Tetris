@@ -6,8 +6,9 @@ import com.badlogic.gdx.utils.ObjectMap;
 public class MessageSystem {
 	
 	public enum Message {
-		SCORE_CHANGE, ROWS_SCORED, ROW_CLEARED, HARD_DROPPED, SOFT_DROPPED, SHIFTED, LOCKED_IN, LEVEL_UP, GAME_OVER, // Game state changes
-		LEFT, RIGHT, ROTATE_LEFT, ROTATE_RIGHT, SOFT_DROP, HARD_DROP, HOLD // Command changes
+		SCORE_CHANGE, ROWS_SCORED, ROW_CLEARED, HARD_DROPPED, SOFT_DROPPED, SHIFTED, LOCKED_IN, LEVEL_UP, // Game events
+		LEFT, RIGHT, ROTATE_LEFT, ROTATE_RIGHT, SOFT_DROP, HARD_DROP, HOLD, RESTART_GAME, GAME_TOGGLE_PAUSE, // Command changes
+		GAME_PAUSED, GAME_RESUMED, GAME_OVER // Game state updates
 	}
 	
 	public enum Extra {

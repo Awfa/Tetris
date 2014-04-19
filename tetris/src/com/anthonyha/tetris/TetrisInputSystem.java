@@ -5,12 +5,18 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Input.Keys;
 
-public class TetrisInputSystem implements InputProcessor {
+public class TetrisInputSystem extends AbstractMessageListener implements InputProcessor {
 
 	private MessageSystem messageSystem;
 	
+	private boolean isPaused;
+	
 	public TetrisInputSystem(MessageSystem m) {
 		messageSystem = m;
+		isPaused = false;
+		
+		m.add(this, Message.GAME_PAUSED);
+		m.add(this, Message.GAME_RESUMED);
 	}
 	
 	// Input Processing
@@ -45,13 +51,18 @@ public class TetrisInputSystem implements InputProcessor {
 			return true;
 			
 		} else if (keycode == Keys.ESCAPE) {
-			Gdx.graphics.setDisplayMode(1280, 720, false);
+			messageSystem.postMessage(Message.GAME_TOGGLE_PAUSE);
 			return true;
 			
 		} else if (keycode == Keys.BACKSPACE) {
 			Gdx.graphics.setDisplayMode(Gdx.graphics.getDesktopDisplayMode().width, Gdx.graphics.getDesktopDisplayMode().height, true);
 			return true;
 			
+		} else if (keycode == Keys.R){
+			if (isPaused) {
+				messageSystem.postMessage(Message.RESTART_GAME);
+				return true;
+			}
 		}
 
 		return false;
@@ -74,6 +85,22 @@ public class TetrisInputSystem implements InputProcessor {
 		}
 		
 		return false;
+	}
+	
+	@Override
+	public void recieveMessage(Message message) {
+		switch(message) {
+		case GAME_PAUSED:
+			isPaused = true;
+			break;
+			
+		case GAME_RESUMED:
+			isPaused = false;
+			break;
+			
+		default:
+			break;
+		}
 	}
 
 	@Override

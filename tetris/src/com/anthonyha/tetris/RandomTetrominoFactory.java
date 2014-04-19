@@ -45,6 +45,11 @@ public class RandomTetrominoFactory implements TetrominoFactory {
 	}
 	
 	@Override
+	public void reset() {
+		bag.clear();
+	}
+	
+	@Override
 	public Tetromino getPiece(TetrominoNames tetrominoName) {
 		//Generate piece from name
 		BlockGrid grid = null;

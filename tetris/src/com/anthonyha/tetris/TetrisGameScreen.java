@@ -5,6 +5,7 @@ import com.anthonyha.tetris.Tetromino.TetrominoNames;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -20,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
@@ -28,15 +30,12 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 	private final Tetris game;
 	
 	private OrthographicCamera camera;
-	
-	private BitmapFont quantico64;
-	private BitmapFont quantico72;
-	
-	private TextureAtlas gameTextures;
-	
+
 	private Sprite background;
 	private Sprite board;
 	private Sprite dropShadow;
+	private Image pauseOverlay;
+	
 	private ObjectMap<TetrominoNames, Sprite> blockSprites;
 	private ObjectMap<TetrominoNames, Sprite> queueOverlaySprites;
 	private ObjectMap<MessageSystem.Extra, Sprite> messageSprites;
@@ -61,14 +60,10 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 	
 	private TetrisBoard gameBoard;
 	
-	private MessageSystem messageSystem;
-	private TetrisSoundSystem tetrisSoundSystem;
-	
 	private Stage stage;
 	
 	ParticleEffectPool tetrisExplosionEffectPool;
 	Array<PooledEffect> effects;
-	
 	
 	public TetrisGameScreen(final Tetris game) {
 		this.game = game;
@@ -76,87 +71,79 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 		float w = 1920f;
 		float h = 1080f;
 		
-		messageSystem = new MessageSystem();
-		messageSystem.add(this, Message.SOFT_DROPPED);
-		messageSystem.add(this, Message.HARD_DROPPED);
-		messageSystem.add(this, Message.SHIFTED);
-		messageSystem.add(this, Message.ROW_CLEARED);
-		messageSystem.add(this, Message.ROWS_SCORED);
+		game.messageSystem.add(this, Message.SOFT_DROPPED);
+		game.messageSystem.add(this, Message.HARD_DROPPED);
+		game.messageSystem.add(this, Message.SHIFTED);
+		game.messageSystem.add(this, Message.ROW_CLEARED);
+		game.messageSystem.add(this, Message.ROWS_SCORED);
+		game.messageSystem.add(this, Message.GAME_PAUSED);
+		game.messageSystem.add(this, Message.GAME_RESUMED);
 		
-		// Texture loading
-		gameTextures = new TextureAtlas(Gdx.files.internal("textures/TetrisGame.pack"));
 		
 		// Mapping each tetromino name to its respective sprite
 		blockSprites = new ObjectMap<TetrominoNames, Sprite>();
-		blockSprites.put(TetrominoNames.I, gameTextures.createSprite("I"));
-		blockSprites.put(TetrominoNames.O, gameTextures.createSprite("O"));
-		blockSprites.put(TetrominoNames.T, gameTextures.createSprite("T"));
-		blockSprites.put(TetrominoNames.S, gameTextures.createSprite("S"));
-		blockSprites.put(TetrominoNames.Z, gameTextures.createSprite("Z"));
-		blockSprites.put(TetrominoNames.J, gameTextures.createSprite("J"));
-		blockSprites.put(TetrominoNames.L, gameTextures.createSprite("L"));
-		blockSprites.put(TetrominoNames.GHOST, gameTextures.createSprite("Ghost"));
+		blockSprites.put(TetrominoNames.I, game.gameAtlas.createSprite("I"));
+		blockSprites.put(TetrominoNames.O, game.gameAtlas.createSprite("O"));
+		blockSprites.put(TetrominoNames.T, game.gameAtlas.createSprite("T"));
+		blockSprites.put(TetrominoNames.S, game.gameAtlas.createSprite("S"));
+		blockSprites.put(TetrominoNames.Z, game.gameAtlas.createSprite("Z"));
+		blockSprites.put(TetrominoNames.J, game.gameAtlas.createSprite("J"));
+		blockSprites.put(TetrominoNames.L, game.gameAtlas.createSprite("L"));
+		blockSprites.put(TetrominoNames.GHOST, game.gameAtlas.createSprite("Ghost"));
 		
 		queueOverlaySprites = new ObjectMap<TetrominoNames, Sprite>();
-		queueOverlaySprites.put(TetrominoNames.I, gameTextures.createSprite("IOverlay"));
-		queueOverlaySprites.put(TetrominoNames.O, gameTextures.createSprite("OOverlay"));
-		queueOverlaySprites.put(TetrominoNames.T, gameTextures.createSprite("TOverlay"));
-		queueOverlaySprites.put(TetrominoNames.S, gameTextures.createSprite("SOverlay"));
-		queueOverlaySprites.put(TetrominoNames.Z, gameTextures.createSprite("ZOverlay"));
-		queueOverlaySprites.put(TetrominoNames.J, gameTextures.createSprite("JOverlay"));
-		queueOverlaySprites.put(TetrominoNames.L, gameTextures.createSprite("LOverlay"));
-		queueOverlaySprites.put(TetrominoNames.GHOST, gameTextures.createSprite("GhostOverlay"));
+		queueOverlaySprites.put(TetrominoNames.I, game.gameAtlas.createSprite("IOverlay"));
+		queueOverlaySprites.put(TetrominoNames.O, game.gameAtlas.createSprite("OOverlay"));
+		queueOverlaySprites.put(TetrominoNames.T, game.gameAtlas.createSprite("TOverlay"));
+		queueOverlaySprites.put(TetrominoNames.S, game.gameAtlas.createSprite("SOverlay"));
+		queueOverlaySprites.put(TetrominoNames.Z, game.gameAtlas.createSprite("ZOverlay"));
+		queueOverlaySprites.put(TetrominoNames.J, game.gameAtlas.createSprite("JOverlay"));
+		queueOverlaySprites.put(TetrominoNames.L, game.gameAtlas.createSprite("LOverlay"));
+		queueOverlaySprites.put(TetrominoNames.GHOST, game.gameAtlas.createSprite("GhostOverlay"));
 		
 		messageSprites = new ObjectMap<MessageSystem.Extra, Sprite>();
-		messageSprites.put(MessageSystem.Extra.DOUBLE_SCORED, gameTextures.createSprite("double"));
-		messageSprites.put(MessageSystem.Extra.TRIPLE_SCORED, gameTextures.createSprite("triple"));
-		messageSprites.put(MessageSystem.Extra.TETRIS_SCORED, gameTextures.createSprite("tetris"));
-		messageSprites.put(MessageSystem.Extra.BACKTOBACK_SCORED, gameTextures.createSprite("backtoback"));
+		messageSprites.put(MessageSystem.Extra.DOUBLE_SCORED, game.gameAtlas.createSprite("double"));
+		messageSprites.put(MessageSystem.Extra.TRIPLE_SCORED, game.gameAtlas.createSprite("triple"));
+		messageSprites.put(MessageSystem.Extra.TETRIS_SCORED, game.gameAtlas.createSprite("tetris"));
+		messageSprites.put(MessageSystem.Extra.BACKTOBACK_SCORED, game.gameAtlas.createSprite("backtoback"));
 		
 		
 		// Create sprites
-		background = gameTextures.createSprite("Background");
-		board = gameTextures.createSprite("Board");
-		dropShadow = gameTextures.createSprite("Shadow");
+		background = game.gameAtlas.createSprite("Background");
+		board = game.gameAtlas.createSprite("Board");
+		dropShadow = game.gameAtlas.createSprite("Shadow");
 		
 		// Create game model
-		gameBoard = new TetrisBoard(13, 1, messageSystem);
+		gameBoard = new TetrisBoard(13, 1, game.messageSystem);
 
 		// Create camera and center it
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, w, h);
 		camera.translate(-(w - background.getRegionWidth()) / 2f, -(h - background.getRegionHeight()) / 2f);
 		camera.update();
-
-		// Create fonts used by the game
-		FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/quantico/Quantico-Regular.otf"));
-		quantico64 = fontGenerator.generateFont(64);
-		quantico72 = fontGenerator.generateFont(72);
-		fontGenerator.dispose();
 		
 		// Create particle effects
 		ParticleEffect tetrisExplosionEffect = new ParticleEffect();
-		tetrisExplosionEffect.load(Gdx.files.internal("effects/BlockExplosion.p"), gameTextures);
+		tetrisExplosionEffect.load(Gdx.files.internal("effects/BlockExplosion.p"), game.gameAtlas);
 		tetrisExplosionEffectPool = new ParticleEffectPool(tetrisExplosionEffect, 1, 2);
 		effects = new Array<PooledEffect>();
-		
-		tetrisSoundSystem = new TetrisSoundSystem(messageSystem);
-		tetrisSoundSystem.setSfxVolume(0.5f);
 		
 		// Set the stage
 		stage = new Stage(w, h, true);
 		stage.setCamera(camera);
 		
-		Gdx.input.setInputProcessor(new TetrisInputSystem(messageSystem));
+		pauseOverlay = new Image(game.gameAtlas.findRegion("PauseOverlay"));
+		
+		
+		stage.addActor(pauseOverlay);
+		pauseOverlay.setBounds(0, 0, stage.getWidth(), stage.getHeight());
+		pauseOverlay.setColor(Color.CLEAR);
+		
+		Gdx.input.setInputProcessor(game.tetrisInputSystem);
 	}
 
 	@Override
 	public void dispose() {
-		quantico64.dispose();
-		quantico72.dispose();
-		
-		gameTextures.dispose();
-		tetrisSoundSystem.dispose();
 		stage.dispose();
 	}
 
@@ -168,7 +155,7 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 		
 		Gdx.gl.glClearColor(1f, 1f, 1f, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-
+		
 		gameBoard.update(delta);
 		
 		
@@ -223,9 +210,9 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 		    }
 		}
 
-		quantico72.draw(game.batch, padNumber(gameBoard.getScore(), 6), 818, 1080-125);
-		quantico64.draw(game.batch, padNumber(gameBoard.getLevel(), 2), 665, 1080-598);
-		quantico64.draw(game.batch, padNumber(gameBoard.getGoal(), 2), 660, 1080-814);
+		game.quantico72.draw(game.batch, padNumber(gameBoard.getScore(), 6), 818, 1080-125);
+		game.quantico64.draw(game.batch, padNumber(gameBoard.getLevel(), 2), 665, 1080-598);
+		game.quantico64.draw(game.batch, padNumber(gameBoard.getGoal(), 2), 660, 1080-814);
 		
 		game.batch.end();
 		
@@ -259,6 +246,22 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 
 	@Override
 	public void resume() {
+	}
+	
+	@Override
+	public void recieveMessage(Message message) {
+		switch(message) {
+		case GAME_PAUSED:
+			pauseOverlay.addAction(Actions.alpha(0.8f, 0.3f, Interpolation.linear));
+			
+			break;
+		case GAME_RESUMED:
+			pauseOverlay.addAction(Actions.alpha(0.f, 0.3f, Interpolation.linear));
+			break;
+			
+		default:
+			break;
+		}
 	}
 
 	@Override
