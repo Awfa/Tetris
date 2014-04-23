@@ -54,7 +54,7 @@ public class TetrisSoundSystem extends AbstractMessageListener implements Dispos
 			break;
 			
 		case LEVEL_UP:
-			success.play(sfxVolume * 0.f);
+			success.play(sfxVolume * 0.5f);
 			break;
 		
 		case GAME_PAUSED:

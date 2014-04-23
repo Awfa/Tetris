@@ -24,7 +24,7 @@ Board
   orig: 320, 640
   offset: 0, 0
   index: -1
-backtoback
+BackToBack
   rotate: false
   xy: 1, 148
   size: 387, 93

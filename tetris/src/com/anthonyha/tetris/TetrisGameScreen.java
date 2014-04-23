@@ -84,6 +84,7 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 		game.messageSystem.add(this, Message.ROWS_SCORED);
 		game.messageSystem.add(this, Message.GAME_PAUSED);
 		game.messageSystem.add(this, Message.GAME_RESUMED);
+		game.messageSystem.add(this, Message.GAME_OVER);
 		
 		
 		// Mapping each tetromino name to its respective sprite
@@ -154,7 +155,7 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 		
 		TextButton resumeButton = new TextButton("Resume", game.tetrisUI.darkButtonStyle);
 		TextButton restartButton = new TextButton("Restart", game.tetrisUI.darkButtonStyle);
-		TextButton optionsButton = new TextButton("Options", game.tetrisUI.darkButtonStyle);
+		//TextButton optionsButton = new TextButton("Options", game.tetrisUI.darkButtonStyle);
 		TextButton mainMenuButton = new TextButton("Back to Menu", game.tetrisUI.darkButtonStyle);
 		
 		resumeButton.addListener(new ChangeListener() {
@@ -316,6 +317,7 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 			pauseMenu.addAction(Actions.sequence(Actions.show(), Actions.fadeIn(pauseTime)));
 			
 			break;
+			
 		case GAME_RESUMED:
 			isPaused = false;
 			
@@ -325,6 +327,13 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 				pauseMenu.removeAction(a);
 			}
 			pauseMenu.addAction(Actions.sequence(Actions.fadeOut(pauseTime), Actions.hide()));
+			
+			break;
+			
+		case GAME_OVER:
+			game.messageSystem.postMessage(Message.RESTART_GAME);
+			game.messageSystem.postMessage(Message.GAME_PAUSED);
+			game.setScreen(game.mainMenu);
 			
 			break;
 			
