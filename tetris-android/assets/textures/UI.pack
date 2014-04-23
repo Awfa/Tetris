@@ -3,14 +3,14 @@ UI.png
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
-title
+Title
   rotate: false
   xy: 1, 1
   size: 444, 122
   orig: 444, 122
   offset: 0, 0
   index: -1
-ButtonDown
+ButtonBlueUp
   rotate: false
   xy: 447, 59
   size: 64, 64
@@ -18,7 +18,7 @@ ButtonDown
   orig: 64, 64
   offset: 0, 0
   index: -1
-ButtonUp
+ButtonDown
   rotate: false
   xy: 513, 59
   size: 64, 64
@@ -26,9 +26,25 @@ ButtonUp
   orig: 64, 64
   offset: 0, 0
   index: -1
-Slider
+ButtonUp
   rotate: false
   xy: 579, 59
+  size: 64, 64
+  split: 16, 16, 16, 16
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+LabelHeader
+  rotate: false
+  xy: 645, 59
+  size: 64, 64
+  split: 16, 16, 16, 16
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+Slider
+  rotate: false
+  xy: 711, 59
   size: 64, 64
   split: 16, 16, 16, 16
   orig: 64, 64
@@ -39,5 +55,12 @@ SliderKnob
   xy: 447, 25
   size: 13, 32
   orig: 13, 32
+  offset: 0, 0
+  index: -1
+PauseMenuFiller
+  rotate: false
+  xy: 777, 91
+  size: 1, 32
+  orig: 1, 32
   offset: 0, 0
   index: -1

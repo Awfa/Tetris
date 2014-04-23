@@ -2,6 +2,7 @@ package com.anthonyha.tetris;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -18,10 +19,16 @@ public class Tetris extends Game {
 	public TextureAtlas gameAtlas;
 	public TextureAtlas uiAtlas;
 	
-	//Quantico font sizes
+	// Quantico font sizes
 	public BitmapFont quantico72;
 	public BitmapFont quantico64;
 	public BitmapFont quantico48;
+	
+	public TetrisUI tetrisUI;
+	
+	// Screens
+	public TetrisMainMenu mainMenu;
+	public TetrisGameScreen gameScreen;
 	
 	@Override
 	public void create() {
@@ -29,9 +36,7 @@ public class Tetris extends Game {
 		
 		messageSystem = new MessageSystem();
 		tetrisSoundSystem = new TetrisSoundSystem(messageSystem);
-		tetrisInputSystem = new TetrisInputSystem(messageSystem);
-		
-		tetrisSoundSystem.setSfxVolume(0.5f);
+		tetrisInputSystem = new TetrisInputSystem(this);
 		
 		// Load up textures used by the game
 		gameAtlas = new TextureAtlas(Gdx.files.internal("textures/TetrisGame.pack"));
@@ -44,7 +49,11 @@ public class Tetris extends Game {
 		quantico48 = fontGenerator.generateFont(48);
 		fontGenerator.dispose();
 		
-		this.setScreen(new TetrisMainMenu(this));
+		tetrisUI = new TetrisUI(this);
+		
+		mainMenu = new TetrisMainMenu(this);
+		gameScreen = new TetrisGameScreen(this);
+		this.setScreen(mainMenu);
 	}
 	
 	@Override
@@ -63,5 +72,8 @@ public class Tetris extends Game {
 		quantico72.dispose();
 		quantico64.dispose();
 		quantico48.dispose();
+		
+		mainMenu.dispose();
+		gameScreen.dispose();
 	}
 }

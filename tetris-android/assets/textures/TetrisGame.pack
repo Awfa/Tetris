@@ -73,21 +73,21 @@ SOverlay
   orig: 168, 216
   offset: 0, 0
   index: -1
-double
+Double
   rotate: false
   xy: 1, 53
   size: 247, 93
   orig: 247, 93
   offset: 0, 0
   index: -1
-tetris
+Tetris
   rotate: false
   xy: 390, 148
   size: 212, 93
   orig: 212, 93
   offset: 0, 0
   index: -1
-triple
+Triple
   rotate: false
   xy: 250, 53
   size: 205, 93
@@ -171,7 +171,7 @@ Z
   orig: 32, 32
   offset: 0, 0
   index: -1
-particle
+Particle
   rotate: false
   xy: 1, 1
   size: 8, 16

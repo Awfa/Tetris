@@ -46,15 +46,15 @@ public class TetrisSoundSystem extends AbstractMessageListener implements Dispos
 		switch(message) {
 		case SOFT_DROPPED:
 		case SHIFTED:
-			shiftSound.play(sfxVolume);
+			shiftSound.play(sfxVolume * 0.5f);
 			break;
 			
 		case HARD_DROPPED:
-			hardDropSound.play(sfxVolume);
+			hardDropSound.play(sfxVolume * 0.5f);
 			break;
 			
 		case LEVEL_UP:
-			success.play(sfxVolume);
+			success.play(sfxVolume * 0.f);
 			break;
 		
 		case GAME_PAUSED:
@@ -109,7 +109,7 @@ public class TetrisSoundSystem extends AbstractMessageListener implements Dispos
 
 	public void setMusicVolume(float musicVolume) {
 		this.musicVolume = musicVolume;
-		theme.setVolume(musicVolume);
+		theme.setVolume(musicVolume * 0.25f); // Normalize music volume
 	}
 
 	public float getSfxVolume() {

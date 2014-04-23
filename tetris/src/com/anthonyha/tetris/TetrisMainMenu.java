@@ -2,30 +2,18 @@ package com.anthonyha.tetris;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL10;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
-import com.badlogic.gdx.scenes.scene2d.ui.Slider.SliderStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 public class TetrisMainMenu implements Screen {
 	private final Tetris game;
@@ -34,99 +22,79 @@ public class TetrisMainMenu implements Screen {
 	public TetrisMainMenu(final Tetris game) {
 		final Table mainMenu = new Table();
 		final Table optionsMenu = new Table();
-		float buttonWidth = 432f;
-		float spacing = 32f;
-		float spacingTop = 64f;
 		
 		this.game = game;
 		
 		stage = new Stage();
 		
-		Gdx.input.setInputProcessor(stage);
-		
 		mainMenu.setFillParent(true);
 		optionsMenu.setFillParent(true);
 		
 		stage.addActor(mainMenu);
-		stage.addActor(optionsMenu);		
-		
-		TextButtonStyle normalButtonStyle = new TextButtonStyle();
-		normalButtonStyle.up = new NinePatchDrawable(game.uiAtlas.createPatch("ButtonUp"));
-		normalButtonStyle.down = new NinePatchDrawable(game.uiAtlas.createPatch("ButtonDown"));
-		normalButtonStyle.font = game.quantico48;
-		normalButtonStyle.fontColor = new Color(0.28f, 0.28f, 0.28f, 1.f);
-		
-		TextButtonStyle playButtonStyle = new TextButtonStyle(normalButtonStyle);
-		playButtonStyle.fontColor = Color.BLACK;
-		
-		SliderStyle optionsSliderStyle = new SliderStyle();
-		optionsSliderStyle.background = new NinePatchDrawable(game.uiAtlas.createPatch("Slider"));
-		optionsSliderStyle.knob = new TextureRegionDrawable(game.uiAtlas.findRegion("SliderKnob"));
-		
-		LabelStyle optionsLabelStyle = new LabelStyle();
-		optionsLabelStyle.background = new NinePatchDrawable(game.uiAtlas.createPatch("ButtonUp"));
-		optionsLabelStyle.font = game.quantico48;
-		optionsLabelStyle.fontColor = new Color(0.28f, 0.28f, 0.28f, 1.f);
-		
-		LabelStyle optionsHeaderStyle = new LabelStyle(optionsLabelStyle);
-		optionsHeaderStyle.font = game.quantico64;
-		optionsHeaderStyle.fontColor = Color.BLACK;
+		stage.addActor(optionsMenu);
 		
 		// Filling the main menu
-		Image mainMenuTitle = new Image(game.uiAtlas.findRegion("title"));
-		TextButton playButton = new TextButton("Play Game", playButtonStyle);
-		TextButton optionButton = new TextButton("Options", normalButtonStyle);
-		TextButton exitButton = new TextButton("Exit", normalButtonStyle);
+		Image mainMenuTitle = new Image(game.uiAtlas.findRegion("Title"));
+		TextButton playButton = new TextButton("Play Game", game.tetrisUI.playButtonStyle);
+		TextButton optionButton = new TextButton("Options", game.tetrisUI.normalButtonStyle);
+		TextButton exitButton = new TextButton("Exit", game.tetrisUI.normalButtonStyle);
 		
 		mainMenu.top();
-		mainMenu.add(mainMenuTitle).padTop(spacingTop).spaceBottom(spacing);
+		mainMenu.add(mainMenuTitle).padTop(TetrisUI.spacingTop).spaceBottom(TetrisUI.spacing);
 		mainMenu.row();
-		mainMenu.add(playButton).width(buttonWidth).spaceBottom(spacing);
+		mainMenu.add(playButton).width(TetrisUI.buttonWidth).spaceBottom(TetrisUI.spacing);
 		mainMenu.row();
-		mainMenu.add(optionButton).width(buttonWidth).spaceBottom(spacing);
+		mainMenu.add(optionButton).width(TetrisUI.buttonWidth).spaceBottom(TetrisUI.spacing);
 		mainMenu.row();
-		mainMenu.add(exitButton).width(buttonWidth).padBottom(spacing);
+		mainMenu.add(exitButton).width(TetrisUI.buttonWidth).padBottom(TetrisUI.spacing);
 		
 		// Filling the options menu
-		Label optionsTitle = new Label("Options", optionsHeaderStyle);
-		Label musicVolume = new Label("Music Vol: 10", optionsLabelStyle);
-		Label sfxVolume = new Label("SFX Vol: 10", optionsLabelStyle);
+		Label optionsTitle = new Label("Options", game.tetrisUI.optionsHeaderStyle);
+		Label musicVolume = new Label("Music Vol: " + game.tetrisSoundSystem.getMusicVolume() * 10, game.tetrisUI.optionsLabelStyle);
+		Label sfxVolume = new Label("SFX Vol: " + game.tetrisSoundSystem.getSfxVolume() * 10, game.tetrisUI.optionsLabelStyle);
+		Slider musicSlider = new Slider(0.f, 10.f, 0.5f, false, game.tetrisUI.optionsSliderStyle);
+		Slider sfxSlider = new Slider(0.f, 10.f, 0.5f, false, game.tetrisUI.optionsSliderStyle);
+		TextButton backButton = new TextButton("Back", game.tetrisUI.normalButtonStyle);
 		
-		optionsTitle.setAlignment(Align.center);
+		musicSlider.setValue(game.tetrisSoundSystem.getMusicVolume() * 10);
 		musicVolume.setAlignment(Align.right);
+		musicVolume.setName("musicVolumeLabel");
+		
+		sfxSlider.setValue(game.tetrisSoundSystem.getSfxVolume() * 10);
 		sfxVolume.setAlignment(Align.right);
-		
-		Slider musicSlider = new Slider(0.f, 10.f, 0.1f, false, optionsSliderStyle);
-		Slider sfxSlider = new Slider(0.f, 10.f, 0.1f, false, optionsSliderStyle);
-		
-		TextButton backButton = new TextButton("Back", normalButtonStyle);
-		
-		musicSlider.setValue(10.f);
-		sfxSlider.setValue(10.f);
+		sfxVolume.setName("sfxVolumeLabel");
 		
 		optionsMenu.top();
-		optionsMenu.add(optionsTitle).width(buttonWidth).padTop(spacingTop).spaceBottom(spacing);
+		optionsMenu.add(optionsTitle).width(TetrisUI.buttonWidth).padTop(TetrisUI.spacingTop).spaceBottom(TetrisUI.spacing);
 		optionsMenu.row();
-		optionsMenu.add(musicVolume).width(buttonWidth).right();
-		optionsMenu.add(musicSlider).width(buttonWidth);
+		optionsMenu.add(musicVolume).width(TetrisUI.buttonWidth).right();
+		optionsMenu.add(musicSlider).width(TetrisUI.buttonWidth);
 		optionsMenu.row();
-		optionsMenu.add(sfxVolume).width(buttonWidth).right().spaceBottom(spacing);
-		optionsMenu.add(sfxSlider).width(buttonWidth);
+		optionsMenu.add(sfxVolume).width(TetrisUI.buttonWidth).right().spaceBottom(TetrisUI.spacing);
+		optionsMenu.add(sfxSlider).width(TetrisUI.buttonWidth);
 		optionsMenu.row();
-		optionsMenu.add(backButton).width(buttonWidth).padBottom(spacing);
+		optionsMenu.add(backButton).width(TetrisUI.buttonWidth).padBottom(TetrisUI.spacing);
 		optionsMenu.validate();
 		
 		// Move options menu off screen
 		optionsMenu.setX(optionsMenu.getWidth());
 		
+		// Main menu listeners
 		playButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				game.setScreen(new TetrisGameScreen(game));
-				dispose();
+				game.setScreen(game.gameScreen);
 			}
 		});
 		
+		exitButton.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				Gdx.app.exit();
+			}
+		});
+		
+		// Option menu listeners
 		optionButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
@@ -135,10 +103,19 @@ public class TetrisMainMenu implements Screen {
 			}
 		});
 		
-		exitButton.addListener(new ChangeListener() {
+		musicSlider.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				Gdx.app.exit();
+				game.tetrisSoundSystem.setMusicVolume(((Slider) actor).getValue() / 10.f);
+				((Label) optionsMenu.findActor("musicVolumeLabel")).setText("Music Vol: " + ((Slider) actor).getValue());
+			}
+		});
+		
+		sfxSlider.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				game.tetrisSoundSystem.setSfxVolume(((Slider) actor).getValue() / 10.f);
+				((Label) optionsMenu.findActor("sfxVolumeLabel")).setText("SFX Vol: " + ((Slider) actor).getValue());
 			}
 		});
 		
@@ -167,8 +144,7 @@ public class TetrisMainMenu implements Screen {
 
 	@Override
 	public void show() {
-		// TODO Auto-generated method stub
-		
+		Gdx.input.setInputProcessor(stage);
 	}
 
 	@Override

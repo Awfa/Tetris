@@ -2,26 +2,28 @@ package com.anthonyha.tetris;
 
 import com.anthonyha.tetris.MessageSystem.Message;
 import com.anthonyha.tetris.Tetromino.TetrominoNames;
-import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
 import com.badlogic.gdx.graphics.g2d.ParticleEffectPool.PooledEffect;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
@@ -57,10 +59,14 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 	private static final int yBoardOffset = 1080-860;
 	private static final int essentialWidth = 700;
 	private static final int essentialHeight = 900;
+	private static final float pauseTime = 0.3f;
 	
 	private TetrisBoard gameBoard;
 	
 	private Stage stage;
+	private Table pauseMenu;
+	
+	private boolean isPaused = false;
 	
 	ParticleEffectPool tetrisExplosionEffectPool;
 	Array<PooledEffect> effects;
@@ -102,10 +108,10 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 		queueOverlaySprites.put(TetrominoNames.GHOST, game.gameAtlas.createSprite("GhostOverlay"));
 		
 		messageSprites = new ObjectMap<MessageSystem.Extra, Sprite>();
-		messageSprites.put(MessageSystem.Extra.DOUBLE_SCORED, game.gameAtlas.createSprite("double"));
-		messageSprites.put(MessageSystem.Extra.TRIPLE_SCORED, game.gameAtlas.createSprite("triple"));
-		messageSprites.put(MessageSystem.Extra.TETRIS_SCORED, game.gameAtlas.createSprite("tetris"));
-		messageSprites.put(MessageSystem.Extra.BACKTOBACK_SCORED, game.gameAtlas.createSprite("backtoback"));
+		messageSprites.put(MessageSystem.Extra.DOUBLE_SCORED, game.gameAtlas.createSprite("Double"));
+		messageSprites.put(MessageSystem.Extra.TRIPLE_SCORED, game.gameAtlas.createSprite("Triple"));
+		messageSprites.put(MessageSystem.Extra.TETRIS_SCORED, game.gameAtlas.createSprite("Tetris"));
+		messageSprites.put(MessageSystem.Extra.BACKTOBACK_SCORED, game.gameAtlas.createSprite("BackToBack"));
 		
 		
 		// Create sprites
@@ -133,13 +139,60 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 		stage.setCamera(camera);
 		
 		pauseOverlay = new Image(game.gameAtlas.findRegion("PauseOverlay"));
-		
-		
 		stage.addActor(pauseOverlay);
+		
 		pauseOverlay.setBounds(0, 0, stage.getWidth(), stage.getHeight());
 		pauseOverlay.setColor(Color.CLEAR);
 		
-		Gdx.input.setInputProcessor(game.tetrisInputSystem);
+		// Add pause menu
+		pauseMenu = new Table();
+		
+		pauseMenu.setFillParent(true);
+		
+		Label pauseHeader = new Label("Pause", game.tetrisUI.pauseHeaderStyle);
+		pauseHeader.setAlignment(Align.center);
+		
+		TextButton resumeButton = new TextButton("Resume", game.tetrisUI.darkButtonStyle);
+		TextButton restartButton = new TextButton("Restart", game.tetrisUI.darkButtonStyle);
+		TextButton optionsButton = new TextButton("Options", game.tetrisUI.darkButtonStyle);
+		TextButton mainMenuButton = new TextButton("Back to Menu", game.tetrisUI.darkButtonStyle);
+		
+		resumeButton.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				game.messageSystem.postMessage(Message.UNPAUSE);
+			}
+		});
+		
+		restartButton.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				game.messageSystem.postMessage(Message.RESTART_GAME);
+			}
+		});
+		
+		mainMenuButton.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				game.messageSystem.postMessage(Message.GAME_PAUSED);
+				game.setScreen(game.mainMenu);
+			}
+		});
+		
+		AtlasRegion pauseMenuFillerTexture = game.uiAtlas.findRegion("PauseMenuFiller"); // Texture to go inbetween each button
+		pauseMenu.top();
+		pauseMenu.add(pauseHeader).width(TetrisUI.buttonWidth).padTop(TetrisUI.spacingTop);
+		pauseMenu.row(); pauseMenu.add(new Image(pauseMenuFillerTexture)).width(TetrisUI.buttonWidth - 16); pauseMenu.row();
+		pauseMenu.add(resumeButton).width(TetrisUI.buttonWidth);
+		pauseMenu.row(); pauseMenu.add(new Image(pauseMenuFillerTexture)).width(TetrisUI.buttonWidth - 16); pauseMenu.row();
+		pauseMenu.add(restartButton).width(TetrisUI.buttonWidth);
+		pauseMenu.row(); pauseMenu.add(new Image(pauseMenuFillerTexture)).width(TetrisUI.buttonWidth - 16); pauseMenu.row();
+		//pauseMenu.add(optionsButton).width(TetrisUI.buttonWidth);
+		//pauseMenu.row(); pauseMenu.add(new Image(pauseMenuFillerTexture)).width(TetrisUI.buttonWidth - 16); pauseMenu.row();
+		pauseMenu.add(mainMenuButton).width(TetrisUI.buttonWidth).spaceBottom(TetrisUI.spacing);
+		pauseMenu.setVisible(false);
+		stage.addActor(pauseMenu);
+		
 	}
 
 	@Override
@@ -234,10 +287,12 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 			height = essentialHeight;
 		}
 		
+		stage.setViewport(width, height, true);
+		pauseMenu.setPosition((background.getRegionWidth() - width) / 2f, background.getRegionHeight() - height);
+		
 		camera.setToOrtho(false, width, height);
 		camera.translate((background.getRegionWidth() - width) / 2f, background.getRegionHeight() - height);
 		camera.update();
-		
 	}
 
 	@Override
@@ -252,11 +307,25 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 	public void recieveMessage(Message message) {
 		switch(message) {
 		case GAME_PAUSED:
-			pauseOverlay.addAction(Actions.alpha(0.8f, 0.3f, Interpolation.linear));
+			isPaused = true;
+			pauseOverlay.addAction(Actions.alpha(1f, pauseTime, Interpolation.linear));
+			
+			for (Action a : pauseMenu.getActions()) {
+				pauseMenu.removeAction(a);
+			}
+			pauseMenu.addAction(Actions.sequence(Actions.show(), Actions.fadeIn(pauseTime)));
 			
 			break;
 		case GAME_RESUMED:
-			pauseOverlay.addAction(Actions.alpha(0.f, 0.3f, Interpolation.linear));
+			isPaused = false;
+			
+			pauseOverlay.addAction(Actions.alpha(0f, pauseTime, Interpolation.linear));
+			
+			for (Action a : pauseMenu.getActions()) {
+				pauseMenu.removeAction(a);
+			}
+			pauseMenu.addAction(Actions.sequence(Actions.fadeOut(pauseTime), Actions.hide()));
+			
 			break;
 			
 		default:
@@ -296,10 +365,12 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 				actor = new Image(messageSprites.get(extra));
 				stage.addActor(actor);
 				actor.addAction(Actions.sequence(Actions.moveTo(-actor.getWidth(), yBoardOffset + 500f),
-						Actions.moveTo(halfPoint - actor.getWidth() / 2 - 10, yBoardOffset + 500, 0.2f, Interpolation.swingIn),
+						Actions.moveTo(halfPoint - actor.getWidth() / 2 - 10, yBoardOffset + 500, 0.2f, Interpolation.exp5In),
 						Actions.moveTo(halfPoint - actor.getWidth() / 2 + 10, yBoardOffset + 500, 0.5f, Interpolation.linear),
-						Actions.moveTo(stage.getWidth(), yBoardOffset + 500, 0.2f, Interpolation.swingOut),
-						Actions.removeActor()));
+						Actions.moveTo(stage.getWidth() + actor.getWidth(), yBoardOffset + 500, 0.2f, Interpolation.exp5Out),
+						Actions.removeActor()
+						));
+				
 				break;
 			case TSPIN_SCORED:
 				
@@ -310,6 +381,10 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 		default:
 			break;
 		}
+	}
+	
+	public boolean isPaused() {
+		return isPaused;
 	}
 	
 	private String padNumber(int num, int pad) {
@@ -354,8 +429,8 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 
 	@Override
 	public void show() {
-		// TODO Auto-generated method stub
-		
+		Gdx.input.setInputProcessor(new InputMultiplexer(stage, game.tetrisInputSystem));
+		game.messageSystem.postMessage(Message.UNPAUSE);
 	}
 
 	@Override

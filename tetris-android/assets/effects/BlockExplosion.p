@@ -175,4 +175,4 @@ aligned: false
 additive: true
 behind: false
 - Image Path -
-C:\Users\Anthony\Documents\GitHub\TetrisArt\particle.png
+Particle.png

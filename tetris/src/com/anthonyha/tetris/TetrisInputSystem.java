@@ -7,16 +7,15 @@ import com.badlogic.gdx.Input.Keys;
 
 public class TetrisInputSystem extends AbstractMessageListener implements InputProcessor {
 
+	private final Tetris game;
 	private MessageSystem messageSystem;
 	
-	private boolean isPaused;
-	
-	public TetrisInputSystem(MessageSystem m) {
-		messageSystem = m;
-		isPaused = false;
+	public TetrisInputSystem(final Tetris game) {
+		this.game = game;
+		messageSystem = game.messageSystem;
 		
-		m.add(this, Message.GAME_PAUSED);
-		m.add(this, Message.GAME_RESUMED);
+		messageSystem.add(this, Message.GAME_PAUSED);
+		messageSystem.add(this, Message.GAME_RESUMED);
 	}
 	
 	// Input Processing
@@ -51,15 +50,23 @@ public class TetrisInputSystem extends AbstractMessageListener implements InputP
 			return true;
 			
 		} else if (keycode == Keys.ESCAPE) {
-			messageSystem.postMessage(Message.GAME_TOGGLE_PAUSE);
+			if (game.gameScreen.isPaused()) {
+				messageSystem.postMessage(Message.UNPAUSE);
+			} else {
+				messageSystem.postMessage(Message.PAUSE);
+			}
 			return true;
 			
 		} else if (keycode == Keys.BACKSPACE) {
-			Gdx.graphics.setDisplayMode(Gdx.graphics.getDesktopDisplayMode().width, Gdx.graphics.getDesktopDisplayMode().height, true);
+			if (Gdx.graphics.isFullscreen()) {
+				Gdx.graphics.setDisplayMode(1280, 720, false);
+			} else {
+				Gdx.graphics.setDisplayMode(Gdx.graphics.getDesktopDisplayMode().width, Gdx.graphics.getDesktopDisplayMode().height, true);
+			}
 			return true;
 			
 		} else if (keycode == Keys.R){
-			if (isPaused) {
+			if (game.gameScreen.isPaused() && game.getScreen() == game.gameScreen) {
 				messageSystem.postMessage(Message.RESTART_GAME);
 				return true;
 			}
@@ -85,22 +92,6 @@ public class TetrisInputSystem extends AbstractMessageListener implements InputP
 		}
 		
 		return false;
-	}
-	
-	@Override
-	public void recieveMessage(Message message) {
-		switch(message) {
-		case GAME_PAUSED:
-			isPaused = true;
-			break;
-			
-		case GAME_RESUMED:
-			isPaused = false;
-			break;
-			
-		default:
-			break;
-		}
 	}
 
 	@Override

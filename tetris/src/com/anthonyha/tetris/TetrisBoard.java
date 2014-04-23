@@ -64,7 +64,8 @@ public class TetrisBoard extends AbstractMessageListener {
 		messageSystem.add(this, Message.SOFT_DROP);
 		messageSystem.add(this, Message.HARD_DROP);
 		messageSystem.add(this, Message.HOLD);
-		messageSystem.add(this, Message.GAME_TOGGLE_PAUSE);
+		messageSystem.add(this, Message.PAUSE);
+		messageSystem.add(this, Message.UNPAUSE);
 		messageSystem.add(this, Message.RESTART_GAME);
 		
 		tetrominoPos = new Vector2(0, 0);
@@ -185,15 +186,14 @@ public class TetrisBoard extends AbstractMessageListener {
 				holdPiece();
 				break;
 				
-			case GAME_TOGGLE_PAUSE:
-				isPaused = !isPaused;
+			case PAUSE:
+				isPaused = true;
+				messageSystem.postMessage(Message.GAME_PAUSED);
+				break;
 				
-				if (isPaused) {
-					messageSystem.postMessage(Message.GAME_PAUSED);
-				} else {
-					messageSystem.postMessage(Message.GAME_RESUMED);
-				}
-				
+			case UNPAUSE:
+				isPaused = false;
+				messageSystem.postMessage(Message.GAME_RESUMED);
 				break;
 				
 			case RESTART_GAME:
@@ -236,13 +236,15 @@ public class TetrisBoard extends AbstractMessageListener {
 	}
 	
 	private void hardDrop() {
-		while(!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y-1) && !isPaused) {
-			--tetrominoPos.y;
-			score += 2;
+		if (!isPaused) {
+			while(!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y-1)) {
+				--tetrominoPos.y;
+				score += 2;
+			}
+			
+			messageSystem.postMessage(MessageSystem.Message.HARD_DROPPED);
+			lockTetromino();
 		}
-		
-		messageSystem.postMessage(MessageSystem.Message.HARD_DROPPED);
-		lockTetromino();
 	}
 
 	private void moveRight() {
