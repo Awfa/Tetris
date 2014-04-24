@@ -168,7 +168,7 @@ public class TetrisBoard extends AbstractMessageListener {
 	
 	@Override
 	public void recieveMessage(Message message) {
-		if (!loss) {
+		if (true) {
 			switch(message) {
 			case HARD_DROP:
 				hardDrop();
@@ -236,7 +236,7 @@ public class TetrisBoard extends AbstractMessageListener {
 	}
 	
 	private void hardDrop() {
-		if (!isPaused) {
+		if (!isPaused && !isLoss()) {
 			while(!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x, tetrominoPos.y-1)) {
 				--tetrominoPos.y;
 				score += 2;
@@ -248,7 +248,7 @@ public class TetrisBoard extends AbstractMessageListener {
 	}
 
 	private void moveRight() {
-		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x + 1, tetrominoPos.y) && !isPaused) {
+		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x + 1, tetrominoPos.y) && !isPaused  && !isLoss()) {
 			++tetrominoPos.x;
 			
 			resetLock();
@@ -257,7 +257,7 @@ public class TetrisBoard extends AbstractMessageListener {
 	}
 
 	private void moveLeft() {
-		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x - 1, tetrominoPos.y) && !isPaused) {
+		if (!gameGrid.intersects(activeTetromino.blockGrid, tetrominoPos.x - 1, tetrominoPos.y) && !isPaused && !isLoss()) {
 			--tetrominoPos.x;
 			
 			resetLock();
@@ -266,7 +266,7 @@ public class TetrisBoard extends AbstractMessageListener {
 	}
 	
 	private void holdPiece() {
-		if (!held && !isPaused) {
+		if (!held && !isPaused  && !isLoss()) {
 			TetrominoNames activeName = activeTetromino.getName();
 			
 			if (heldTetromino == null) {
@@ -281,7 +281,7 @@ public class TetrisBoard extends AbstractMessageListener {
 	}
 
 	private void rotateClockwise() {
-		if (!isPaused) {
+		if (!isPaused  && !isLoss()) {
 			Tetromino temp = new Tetromino(activeTetromino);
 			temp.rotateClockwise();
 	
@@ -305,7 +305,7 @@ public class TetrisBoard extends AbstractMessageListener {
 	}
 
 	private void rotateCounterClockwise() {
-		if (!isPaused) {
+		if (!isPaused  && !isLoss()) {
 			Tetromino temp = new Tetromino(activeTetromino);
 			temp.rotateCounterClockwise();
 	
@@ -453,7 +453,10 @@ public class TetrisBoard extends AbstractMessageListener {
 		goal = level * 5;
 		fallTime = (float) (1/(Math.pow(1.3, level-1)));
 		softDropTime = (float) (0.068/Math.pow(1.15, level-1));
-		lockTime = fallTime/2;
+		lockTime = (float) (Math.pow(0.75, (level - 1) + 5.52362) + 0.29585798816);
+		
+		dasTime = (float) (-0.011905*(level - 1) + 0.2666666);
+		amTime = (float) (-0.0001349*(level-1) + 0.0388888);
 	}
 	
 	private void resetLock() {

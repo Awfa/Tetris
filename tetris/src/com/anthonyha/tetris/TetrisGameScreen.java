@@ -65,6 +65,7 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 	
 	private Stage stage;
 	private Table pauseMenu;
+	private Table gameOverMenu;
 	
 	private boolean isPaused = false;
 	
@@ -144,7 +145,8 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 		
 		pauseOverlay.setBounds(0, 0, stage.getWidth(), stage.getHeight());
 		pauseOverlay.setColor(Color.CLEAR);
-		
+
+		AtlasRegion pauseMenuFillerTexture = game.uiAtlas.findRegion("PauseMenuFiller"); // Texture to go inbetween each button
 		// Add pause menu
 		pauseMenu = new Table();
 		
@@ -155,7 +157,6 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 		
 		TextButton resumeButton = new TextButton("Resume", game.tetrisUI.darkButtonStyle);
 		TextButton restartButton = new TextButton("Restart", game.tetrisUI.darkButtonStyle);
-		//TextButton optionsButton = new TextButton("Options", game.tetrisUI.darkButtonStyle);
 		TextButton mainMenuButton = new TextButton("Back to Menu", game.tetrisUI.darkButtonStyle);
 		
 		resumeButton.addListener(new ChangeListener() {
@@ -180,7 +181,6 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 			}
 		});
 		
-		AtlasRegion pauseMenuFillerTexture = game.uiAtlas.findRegion("PauseMenuFiller"); // Texture to go inbetween each button
 		pauseMenu.top();
 		pauseMenu.add(pauseHeader).width(TetrisUI.buttonWidth).padTop(TetrisUI.spacingTop);
 		pauseMenu.row(); pauseMenu.add(new Image(pauseMenuFillerTexture)).width(TetrisUI.buttonWidth - 16); pauseMenu.row();
@@ -188,12 +188,54 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 		pauseMenu.row(); pauseMenu.add(new Image(pauseMenuFillerTexture)).width(TetrisUI.buttonWidth - 16); pauseMenu.row();
 		pauseMenu.add(restartButton).width(TetrisUI.buttonWidth);
 		pauseMenu.row(); pauseMenu.add(new Image(pauseMenuFillerTexture)).width(TetrisUI.buttonWidth - 16); pauseMenu.row();
-		//pauseMenu.add(optionsButton).width(TetrisUI.buttonWidth);
-		//pauseMenu.row(); pauseMenu.add(new Image(pauseMenuFillerTexture)).width(TetrisUI.buttonWidth - 16); pauseMenu.row();
 		pauseMenu.add(mainMenuButton).width(TetrisUI.buttonWidth).spaceBottom(TetrisUI.spacing);
 		pauseMenu.setVisible(false);
-		stage.addActor(pauseMenu);
 		
+		// Game Over menu which is the same as pause except without resume button
+		gameOverMenu = new Table();
+		
+		gameOverMenu.setFillParent(true);
+		
+		Label loseHeader = new Label("You Lose", game.tetrisUI.pauseHeaderStyle);
+		loseHeader.setAlignment(Align.center);
+		
+		TextButton restartButton2 = new TextButton("Restart", game.tetrisUI.darkButtonStyle);
+		TextButton mainMenuButton2 = new TextButton("Back to Menu", game.tetrisUI.darkButtonStyle);
+		
+		restartButton2.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				game.messageSystem.postMessage(Message.RESTART_GAME);
+				pauseOverlay.addAction(Actions.alpha(0f, pauseTime, Interpolation.linear));
+				actor.getParent().addAction(Actions.sequence(Actions.fadeOut(pauseTime), Actions.hide()));
+			}
+		});
+		
+		mainMenuButton2.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				
+				
+				pauseOverlay.addAction(Actions.alpha(0f));
+				actor.getParent().setVisible(false);;
+				
+				game.setScreen(game.mainMenu);
+				
+				game.messageSystem.postMessage(Message.RESTART_GAME);
+				game.messageSystem.postMessage(Message.GAME_PAUSED);
+			}
+		});
+		
+		gameOverMenu.top();
+		gameOverMenu.add(loseHeader).width(TetrisUI.buttonWidth).padTop(TetrisUI.spacingTop);
+		gameOverMenu.row(); gameOverMenu.add(new Image(pauseMenuFillerTexture)).width(TetrisUI.buttonWidth - 16); gameOverMenu.row();
+		gameOverMenu.add(restartButton2).width(TetrisUI.buttonWidth);
+		gameOverMenu.row(); gameOverMenu.add(new Image(pauseMenuFillerTexture)).width(TetrisUI.buttonWidth - 16); gameOverMenu.row();
+		gameOverMenu.add(mainMenuButton2).width(TetrisUI.buttonWidth).spaceBottom(TetrisUI.spacing);
+		gameOverMenu.setVisible(false);
+		
+		stage.addActor(pauseMenu);
+		stage.addActor(gameOverMenu);
 	}
 
 	@Override
@@ -290,6 +332,7 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 		
 		stage.setViewport(width, height, true);
 		pauseMenu.setPosition((background.getRegionWidth() - width) / 2f, background.getRegionHeight() - height);
+		gameOverMenu.setPosition((background.getRegionWidth() - width) / 2f, background.getRegionHeight() - height);
 		
 		camera.setToOrtho(false, width, height);
 		camera.translate((background.getRegionWidth() - width) / 2f, background.getRegionHeight() - height);
@@ -328,12 +371,19 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 			}
 			pauseMenu.addAction(Actions.sequence(Actions.fadeOut(pauseTime), Actions.hide()));
 			
+			pauseOverlay.addAction(Actions.alpha(0f, pauseTime, Interpolation.linear));
+			gameOverMenu.addAction(Actions.sequence(Actions.fadeOut(pauseTime), Actions.hide()));
+			
 			break;
 			
 		case GAME_OVER:
-			game.messageSystem.postMessage(Message.RESTART_GAME);
-			game.messageSystem.postMessage(Message.GAME_PAUSED);
-			game.setScreen(game.mainMenu);
+			isPaused = true;
+			pauseOverlay.addAction(Actions.alpha(1f, pauseTime, Interpolation.linear));
+			
+			for (Action a : gameOverMenu.getActions()) {
+				gameOverMenu.removeAction(a);
+			}
+			gameOverMenu.addAction(Actions.sequence(Actions.show(), Actions.fadeIn(pauseTime)));
 			
 			break;
 			

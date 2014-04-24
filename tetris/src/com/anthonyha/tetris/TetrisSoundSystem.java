@@ -24,6 +24,7 @@ public class TetrisSoundSystem extends AbstractMessageListener implements Dispos
 		m.add(this, Message.GAME_PAUSED);
 		m.add(this, Message.GAME_RESUMED);
 		m.add(this, Message.RESTART_GAME);
+		m.add(this, Message.GAME_OVER);
 		
 		// Load sfx
 		shiftSound = Gdx.audio.newSound(Gdx.files.internal("sfx/shiftSound.wav"));
@@ -57,6 +58,7 @@ public class TetrisSoundSystem extends AbstractMessageListener implements Dispos
 			success.play(sfxVolume * 0.5f);
 			break;
 		
+		case GAME_OVER:
 		case GAME_PAUSED:
 			theme.pause();
 			break;
