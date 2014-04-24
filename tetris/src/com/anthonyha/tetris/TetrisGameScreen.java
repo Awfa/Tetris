@@ -181,8 +181,7 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 			}
 		});
 		
-		pauseMenu.top();
-		pauseMenu.add(pauseHeader).width(TetrisUI.buttonWidth).padTop(TetrisUI.spacingTop);
+		pauseMenu.add(pauseHeader).width(TetrisUI.buttonWidth);
 		pauseMenu.row(); pauseMenu.add(new Image(pauseMenuFillerTexture)).width(TetrisUI.buttonWidth - 16); pauseMenu.row();
 		pauseMenu.add(resumeButton).width(TetrisUI.buttonWidth);
 		pauseMenu.row(); pauseMenu.add(new Image(pauseMenuFillerTexture)).width(TetrisUI.buttonWidth - 16); pauseMenu.row();
@@ -226,8 +225,7 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 			}
 		});
 		
-		gameOverMenu.top();
-		gameOverMenu.add(loseHeader).width(TetrisUI.buttonWidth).padTop(TetrisUI.spacingTop);
+		gameOverMenu.add(loseHeader).width(TetrisUI.buttonWidth);
 		gameOverMenu.row(); gameOverMenu.add(new Image(pauseMenuFillerTexture)).width(TetrisUI.buttonWidth - 16); gameOverMenu.row();
 		gameOverMenu.add(restartButton2).width(TetrisUI.buttonWidth);
 		gameOverMenu.row(); gameOverMenu.add(new Image(pauseMenuFillerTexture)).width(TetrisUI.buttonWidth - 16); gameOverMenu.row();
