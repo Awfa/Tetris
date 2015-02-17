@@ -45,7 +45,7 @@ public class TetrisInputSystem extends AbstractMessageListener implements InputP
 			messageSystem.postMessage(Message.HARD_DROP);
 			return true;
 			
-		} else if (keycode == Keys.SHIFT_LEFT || keycode == Keys.C) {
+		} else if (keycode == Keys.SHIFT_LEFT || keycode == Keys.C || keycode == Keys.SHIFT_RIGHT) {
 			messageSystem.postMessage(Message.HOLD);
 			return true;
 			

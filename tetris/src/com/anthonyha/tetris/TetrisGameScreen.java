@@ -26,6 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.TimeUtils;
 
 public class TetrisGameScreen extends AbstractMessageListener implements Screen {
 	private static final int scale = 32;
@@ -122,7 +123,7 @@ public class TetrisGameScreen extends AbstractMessageListener implements Screen 
 		dropShadow = game.gameAtlas.createSprite("Shadow");
 		
 		// Create game model
-		gameBoard = new TetrisBoard(13, 1, game.messageSystem);
+		gameBoard = new TetrisBoard(TimeUtils.millis(), 1, game.messageSystem);
 
 		// Create camera and center it
 		camera = new OrthographicCamera();
